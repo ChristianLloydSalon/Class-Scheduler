@@ -65,50 +65,48 @@ class AppTypography extends ThemeExtension<AppTypography> {
 
   // Default Typography Theme
   static final light = AppTypography(
-    // Display styles
+    // Heading styles
     heading1: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 57,
-      fontWeight: FontWeight.w400,
+      fontSize: 36,
+      fontWeight: FontWeight.w800, // ExtraBold
       letterSpacing: -0.25,
       height: 1.12,
     ),
     heading2: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 45,
-      fontWeight: FontWeight.w400,
+      fontSize: 20,
+      fontWeight: FontWeight.w800, // ExtraBold
       letterSpacing: 0,
       height: 1.16,
     ),
     heading3: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 36,
-      fontWeight: FontWeight.w400,
+      fontSize: 18,
+      fontWeight: FontWeight.w800, // ExtraBold
       letterSpacing: 0,
       height: 1.22,
     ),
-
-    // Headline styles
     heading4: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 32,
-      fontWeight: FontWeight.w400,
+      fontSize: 17,
+      fontWeight: FontWeight.w600, // SemiBold
       letterSpacing: 0,
       height: 1.25,
     ),
 
-    // Title styles
+    // Subtitle styles
     subtitle1: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 28,
-      fontWeight: FontWeight.w400,
+      fontSize: 15,
+      fontWeight: FontWeight.w600, // SemiBold
       letterSpacing: 0,
       height: 1.29,
     ),
     subtitle2: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 24,
-      fontWeight: FontWeight.w400,
+      fontSize: 14,
+      fontWeight: FontWeight.w400, // Regular
       letterSpacing: 0,
       height: 1.33,
     ),
@@ -116,59 +114,59 @@ class AppTypography extends ThemeExtension<AppTypography> {
     // Body styles
     body1: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
+      fontSize: 13,
+      fontWeight: FontWeight.w600, // SemiBold
       letterSpacing: 0.5,
       height: 1.5,
     ),
     body2: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
+      fontSize: 13,
+      fontWeight: FontWeight.w500, // Medium
       letterSpacing: 0.25,
       height: 1.43,
     ),
     body3: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
+      fontSize: 13,
+      fontWeight: FontWeight.w400, // Regular
       letterSpacing: 0.4,
       height: 1.33,
     ),
 
-    // Label styles
+    // Caption styles
     caption1: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
+      fontSize: 12,
+      fontWeight: FontWeight.w700, // Bold
       letterSpacing: 0.1,
       height: 1.43,
     ),
     caption2: const TextStyle(
       fontFamily: _fontFamily,
       fontSize: 12,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600, // SemiBold
       letterSpacing: 0.5,
       height: 1.33,
     ),
     caption3: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 11,
-      fontWeight: FontWeight.w500,
+      fontSize: 12,
+      fontWeight: FontWeight.w500, // Medium
       letterSpacing: 0.5,
       height: 1.45,
     ),
     caption4: const TextStyle(
       fontFamily: _fontFamily,
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
+      fontSize: 12,
+      fontWeight: FontWeight.w400, // Regular
       letterSpacing: 0.5,
       height: 1.5,
     ),
     small: const TextStyle(
       fontFamily: _fontFamily,
       fontSize: 10,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w600, // SemiBold
       letterSpacing: 0.5,
       height: 1.5,
     ),
