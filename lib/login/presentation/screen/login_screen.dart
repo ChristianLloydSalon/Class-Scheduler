@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:scheduler/common/component/action/primary_button.dart';
 import 'package:scheduler/common/component/input/primary_text_field.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
+import 'package:scheduler/sign_up/presentation/screen/landing_screen.dart';
 
 class LoginScreen extends HookWidget {
   const LoginScreen({super.key});
@@ -34,7 +35,7 @@ class LoginScreen extends HookWidget {
             24,
             24,
             24,
-            24 + MediaQuery.of(context).viewInsets.bottom,
+            24 + MediaQuery.viewInsetsOf(context).bottom,
           ),
           child: Form(
             key: formKey,
@@ -105,7 +106,12 @@ class LoginScreen extends HookWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        // TODO: Navigate to registration
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LandingScreen(),
+                          ),
+                        );
                       },
                       child: Text(
                         'Register now',

@@ -8,6 +8,7 @@ class PrimaryTextField extends HookWidget {
     super.key,
     this.onChanged,
     this.controller,
+    this.labelText,
     this.hintText,
     this.errorText,
     this.validator,
@@ -24,6 +25,7 @@ class PrimaryTextField extends HookWidget {
 
   final void Function(String)? onChanged;
   final TextEditingController? controller;
+  final String? labelText;
   final String? hintText;
   final String? errorText;
   final String? Function(String?)? validator;
@@ -41,64 +43,75 @@ class PrimaryTextField extends HookWidget {
   Widget build(BuildContext context) {
     final isObscured = useState(true);
 
-    return TextFormField(
-      controller: controller,
-      onChanged: onChanged,
-      validator: validator,
-      onSaved: onSaved,
-      obscureText: obscureText && isObscured.value,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      maxLines: obscureText ? 1 : maxLines,
-      maxLength: maxLength,
-      textCapitalization: textCapitalization,
-      textInputAction: textInputAction,
-      onFieldSubmitted: onFieldSubmitted,
-      style: context.textStyles.body2.textPrimary,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: context.textStyles.body2.textHint,
-        errorText: errorText,
-        errorStyle: context.textStyles.caption3.error,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+    return Column(
+      spacing: 8,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (labelText != null)
+          Text(labelText!, style: context.textStyles.body2.textPrimary),
+        TextFormField(
+          controller: controller,
+          onChanged: onChanged,
+          validator: validator,
+          onSaved: onSaved,
+          obscureText: obscureText && isObscured.value,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          maxLines: obscureText ? 1 : maxLines,
+          maxLength: maxLength,
+          textCapitalization: textCapitalization,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onFieldSubmitted,
+          style: context.textStyles.body2.textPrimary,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: context.textStyles.body2.textHint,
+            errorText: errorText,
+            errorStyle: context.textStyles.caption3.error,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            filled: true,
+            fillColor: context.colors.surface,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colors.inputBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colors.inputBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colors.primary),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colors.error),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colors.error),
+            ),
+            suffixIcon:
+                obscureText
+                    ? IconButton(
+                      icon: Icon(
+                        isObscured.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: context.colors.textHint,
+                      ),
+                      onPressed: () {
+                        isObscured.value = !isObscured.value;
+                      },
+                    )
+                    : null,
+          ),
         ),
-        filled: true,
-        fillColor: context.colors.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: context.colors.inputBorder),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: context.colors.inputBorder),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: context.colors.primary),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: context.colors.error),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: context.colors.error),
-        ),
-        suffixIcon:
-            obscureText
-                ? IconButton(
-                  icon: Icon(
-                    isObscured.value ? Icons.visibility_off : Icons.visibility,
-                    color: context.colors.textHint,
-                  ),
-                  onPressed: () {
-                    isObscured.value = !isObscured.value;
-                  },
-                )
-                : null,
-      ),
+      ],
     );
   }
 }

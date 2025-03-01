@@ -7,9 +7,7 @@ class AppIcons extends ThemeExtension<AppIcons> {
 
   final SvgPicture logo;
 
-  static final icons = AppIcons(
-    logo: SvgPicture.asset('/assets/icon/logo.svg'),
-  );
+  static final icons = AppIcons(logo: SvgPicture.asset('assets/icon/logo.svg'));
 
   @override
   ThemeExtension<AppIcons> copyWith({SvgPicture? logo}) {
