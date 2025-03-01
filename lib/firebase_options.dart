@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:scheduler/config/app_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -53,9 +54,9 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDsNdcS3LXFyRk7_4c35lrSUtPelrw5g6U',
-    appId: '1:676833093854:android:c6c1fbb4c1a063fc863a4f',
-    messagingSenderId: '676833093854',
-    projectId: 'scheduler-5da13',
+    apiKey: AppConfig.firebaseApiKey,
+    appId: AppConfig.firebaseAppId,
+    messagingSenderId: AppConfig.firebaseMessagingSenderId,
+    projectId: AppConfig.firebaseProjectId,
   );
 }

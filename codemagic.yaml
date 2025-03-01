@@ -3,14 +3,35 @@ workflows:
     name: Android Release
     max_build_duration: 60
     environment:
+      groups:
+        - firebase
       flutter: 3.29.0
     triggering:
       events:
         - push
-    script: |
-      echo "Building Android Release"
-      flutter clean
-      flutter pub get
+    scripts:
+      - name: Set up Environment
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+          flutter clean
+          flutter pub get
+          ./scripts/create-env.sh
+          $FLUTTER_ROOT/bin/dart env.dart
+
+      - name: Pre-build Scripts
+        script: |
+          ls -la $FCI_BUILD_DIR
+          echo ${JKS_FILE} | base64 --decode > $FCI_BUILD_DIR/android/app/app-release.jks
+          echo ${KEYSTORE_PROPERTIES} | base64 --decode > $FCI_BUILD_DIR/android/keystore.properties
+
+      - name: Android Release Fastlane
+        script: |
+          gem install bundler:1.17.2
+          cd android
+          bundle install
+          bundle exec fastlane android build
+          bundle exec fastlane android release
+
     publishing:
       email:
         recipients:

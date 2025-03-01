@@ -16,8 +16,8 @@
 default_platform(:android)
 
 platform :android do
-  desc "Release build"
-  lane :release do |options|
+  desc "Build the app"
+  lane :build do
     # Clean Flutter build
     sh("flutter clean")
     
@@ -26,7 +26,10 @@ platform :android do
     
     # Build Flutter APK
     sh("flutter build apk --release")
-    
+  end
+
+  desc "Release build"
+  lane :release do
     firebase_app_distribution(
       app: ENV['FIREBASE_APP_ID'],
       groups: ENV['TESTERS_GROUP'],
