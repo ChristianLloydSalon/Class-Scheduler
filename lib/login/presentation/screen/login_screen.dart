@@ -54,7 +54,7 @@ class LoginScreen extends HookWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Please enter your ID to log in.',
+                            'Please enter your email to log in.',
                             style: context.textStyles.subtitle2.textPrimary,
                           ),
                         ],
@@ -67,7 +67,7 @@ class LoginScreen extends HookWidget {
                 const SizedBox(height: 32),
                 PrimaryTextField(
                   controller: emailController,
-                  hintText: 'Student Email',
+                  hintText: 'Email',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
