@@ -39,7 +39,7 @@ workflows:
           cd android
           bundle install
           bundle exec fastlane android build
-          bundle exec fastlane androidrelease
+          bundle exec fastlane android release
 
     publishing:
       email:
