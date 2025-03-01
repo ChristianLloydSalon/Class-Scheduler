@@ -5,6 +5,9 @@ void main() {
   // Load .env file
   final env = DotEnv()..load();
 
+  // ignore: avoid_print
+  print('Creating env.dart');
+
   final directory = Directory('lib/config');
   if (!directory.existsSync()) {
     directory.createSync(recursive: true);
@@ -26,6 +29,9 @@ void main() {
 
   // Write to app_config.dart file
   File('lib/config/app_config.dart').writeAsStringSync(config.toString());
+
+  // ignore: avoid_print
+  print('Created env.dart');
 }
 
 // Helper method to convert ENV_VAR format to camelCase

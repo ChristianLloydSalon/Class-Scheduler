@@ -21,12 +21,13 @@ workflows:
           ./scripts/create-fastlane-env.sh
           ./scripts/create-env.sh
           $FLUTTER_ROOT/bin/dart env.dart
+          echo "Created env.dart"
 
       - name: Pre-build Scripts
         script: |
           ls -la $FCI_BUILD_DIR
           echo ${GOOGLE_SERVICES_JSON} | base64 --decode > $FCI_BUILD_DIR/android/app/google-services.json
-          echo ${JKS_FILE} | base64 --decode > $FCI_BUILD_DIR/android/app/release.jks
+          echo ${JKS_FILE} | base64 --decode > $FCI_BUILD_DIR/android/app/release_keystore.jks
           echo ${KEYSTORE_PROPERTIES} | base64 --decode > $FCI_BUILD_DIR/android/key.properties
 
       - name: Android Release Fastlane
@@ -35,7 +36,7 @@ workflows:
           cd android
           bundle install
           bundle exec fastlane android build
-          bundle exec fastlane android release
+          bundle exec fastlane androidrelease
 
     publishing:
       email:
