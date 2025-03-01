@@ -19,6 +19,8 @@ workflows:
           echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
           flutter clean
           flutter pub get
+          chmod +x scripts/create-fastlane-env.sh
+          chmod +x scripts/create-env.sh
           ./scripts/create-fastlane-env.sh
           ./scripts/create-env.sh
           $FLUTTER_ROOT/bin/dart env.dart
