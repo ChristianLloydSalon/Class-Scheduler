@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
+import 'package:scheduler/admin/presentation/screen/admin_screen.dart';
 import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
+import 'package:scheduler/faculty/presentation/screen/faculty_screen.dart';
 import 'package:scheduler/login/presentation/screen/login_screen.dart';
 import 'package:scheduler/sign_up/presentation/screen/landing_screen.dart';
 import 'package:scheduler/sign_up/presentation/screen/sign_up_screen.dart';
@@ -10,7 +12,7 @@ class AppRouter {
   const AppRouter._();
 
   static final router = GoRouter(
-    initialLocation: Uri.base.path,
+    initialLocation: LoginScreen.route,
     routes: [
       GoRoute(
         path: LoginScreen.route,
@@ -46,6 +48,16 @@ class AppRouter {
         path: StudentScreen.route,
         name: StudentScreen.routeName,
         builder: (context, state) => const StudentScreen(),
+      ),
+      GoRoute(
+        path: AdminScreen.route,
+        name: AdminScreen.routeName,
+        builder: (context, state) => const AdminScreen(),
+      ),
+      GoRoute(
+        path: FacultyScreen.route,
+        name: FacultyScreen.routeName,
+        builder: (context, state) => const FacultyScreen(),
       ),
     ],
     redirect: (context, state) async {
@@ -88,11 +100,11 @@ class AppRouter {
   static String _getInitialRouteForRole(UserRole role) {
     switch (role) {
       case UserRole.student:
-        return '/student/schedule';
+        return StudentScreen.route;
       case UserRole.faculty:
-        return '/faculty/schedule';
+        return FacultyScreen.route;
       case UserRole.admin:
-        return '/admin/dashboard';
+        return AdminScreen.route;
       case UserRole.none:
         return LoginScreen.route;
     }

@@ -3,15 +3,22 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 @immutable
 class AppIcons extends ThemeExtension<AppIcons> {
-  const AppIcons({required this.logo});
+  const AppIcons({required this.logo, required this.adminLogo});
 
   final SvgPicture logo;
+  final SvgPicture adminLogo;
 
-  static final icons = AppIcons(logo: SvgPicture.asset('assets/icon/logo.svg'));
+  static final icons = AppIcons(
+    logo: SvgPicture.asset('assets/icon/logo.svg'),
+    adminLogo: SvgPicture.asset('assets/icon/admin_logo.svg'),
+  );
 
   @override
-  ThemeExtension<AppIcons> copyWith({SvgPicture? logo}) {
-    return AppIcons(logo: logo ?? this.logo);
+  ThemeExtension<AppIcons> copyWith({SvgPicture? logo, SvgPicture? adminLogo}) {
+    return AppIcons(
+      logo: logo ?? this.logo,
+      adminLogo: adminLogo ?? this.adminLogo,
+    );
   }
 
   @override

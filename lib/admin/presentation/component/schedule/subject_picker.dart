@@ -1,0 +1,153 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:scheduler/common/theme/app_theme.dart';
+
+class SubjectPicker extends StatelessWidget {
+  final Function(DocumentSnapshot) onSelect;
+
+  const SubjectPicker({super.key, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text(
+          'Select Subject',
+          style: context.textStyles.heading2.textPrimary,
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Choose Your Subject',
+                  style: context.textStyles.heading1.textPrimary,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Select from our comprehensive list of academic subjects to create your schedule.',
+                  style: context.textStyles.body2.textSecondary,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: FirestoreListView<Map<String, dynamic>>(
+              query: FirebaseFirestore.instance
+                  .collection('subjects')
+                  .orderBy('title'),
+              itemBuilder: (context, snapshot) {
+                final data = snapshot.data();
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        onSelect(snapshot);
+                        Navigator.pop(context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.book_outlined,
+                                  color: Colors.indigo,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['title'],
+                                    style: context.textStyles.body1.textPrimary,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    data['code'],
+                                    style:
+                                        context
+                                            .textStyles
+                                            .caption1
+                                            .textSecondary,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time,
+                                        size: 16,
+                                        color: context.colors.textSecondary,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${data['units']} units',
+                                        style:
+                                            context
+                                                .textStyles
+                                                .caption1
+                                                .textSecondary,
+                                      ),
+                                      if (data['hasLab'] == true) ...[
+                                        const SizedBox(width: 12),
+                                        Icon(
+                                          Icons.computer,
+                                          size: 16,
+                                          color: context.colors.textSecondary,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'With Lab',
+                                          style:
+                                              context
+                                                  .textStyles
+                                                  .caption1
+                                                  .textSecondary,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: context.colors.textHint,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Divider(height: 1, color: context.colors.inputBorder),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,6 +1,16 @@
 part of '../bloc/auth_bloc.dart';
 
-enum UserRole { student, faculty, admin, none }
+enum UserRole {
+  student,
+  faculty,
+  admin,
+  none;
+
+  bool get isStudent => this == student;
+  bool get isFaculty => this == faculty;
+  bool get isAdmin => this == admin;
+  bool get isNone => this == none;
+}
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();

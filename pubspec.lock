@@ -273,6 +273,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.10.4"
+  firebase_ui_firestore:
+    dependency: "direct main"
+    description:
+      name: firebase_ui_firestore
+      sha256: "9043b9e579cfb23fff6f3c6ab1bdb32697cd4dbebba734db969cb488dd960957"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.7.1"
+  firebase_ui_localizations:
+    dependency: transitive
+    description:
+      name: firebase_ui_localizations
+      sha256: "01c0c872ce08d16d217490af3438c97c4fcf1187e856dd2525f892178782fc46"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.13.1"
+  firebase_ui_shared:
+    dependency: transitive
+    description:
+      name: firebase_ui_shared
+      sha256: f1d07c130a39104d32fba1dab274b7bcb13be2bf4e652624a4ccabb58f9781f1
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.1"
+  fixnum:
+    dependency: transitive
+    description:
+      name: fixnum
+      sha256: b6dc7065e46c974bc7c5f143080a6764ec7a4be6da1285ececdc37be96de53be
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -310,6 +342,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  flutter_localizations:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_native_splash:
     dependency: "direct main"
     description:
@@ -368,6 +405,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  iconsax_flutter:
+    dependency: transitive
+    description:
+      name: iconsax_flutter
+      sha256: "95b65699da8ea98f87c5d232f06b0debaaf1ec1332b697e4d90969ec9a93037d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   image:
     dependency: transitive
     description:
@@ -376,6 +421,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.5.3"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.19.0"
   json_annotation:
     dependency: transitive
     description:
@@ -496,6 +549,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pausable_timer:
+    dependency: transitive
+    description:
+      name: pausable_timer
+      sha256: "6ef1a95441ec3439de6fb63f39a011b67e693198e7dae14e20675c3c00e86074"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0+3"
   petitparser:
     dependency: transitive
     description:
@@ -605,6 +666,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.1"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   stack_trace:
     dependency: transitive
     description:
@@ -645,6 +714,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
+  toastification:
+    dependency: "direct main"
+    description:
+      name: toastification
+      sha256: "58738b629f719688fce1125a86b6719938cdd1f38f819456d142d51d041a5655"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   typed_data:
     dependency: transitive
     description:
@@ -661,6 +738,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
+  uuid:
+    dependency: transitive
+    description:
+      name: uuid
+      sha256: a5be9ef6618a7ac1e964353ef476418026db906c4facdedaa299b7a2e71690ff
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.5.1"
   vector_graphics:
     dependency: transitive
     description:

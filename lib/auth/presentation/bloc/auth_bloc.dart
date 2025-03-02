@@ -92,6 +92,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               'lastActiveAt': FieldValue.serverTimestamp(),
             }, SetOptions(merge: true));
 
+        // save user to shared preferences
+        await SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('userId', currentUser?.uid ?? '');
+          prefs.setString('role', role.name);
+        });
+
         add(AuthenticatedEvent(user.uid, role));
       } else {
         add(const UnauthenticatedEvent());
@@ -139,6 +145,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             orElse: () => UserRole.none,
           );
 
+          // save user to shared preferences
+          await SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('userId', currentUser.uid);
+            prefs.setString('role', role.name);
+          });
+
           emit(
             AuthState(authenticated: true, userId: currentUser.uid, role: role),
           );
@@ -148,6 +160,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } catch (e) {
       emit(AuthState(errorMessage: e.toString()));
+
+      emit(const AuthState(errorMessage: ''));
     }
   }
 
@@ -207,6 +221,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } catch (e) {
       emit(AuthState(errorMessage: e.toString()));
+
+      emit(const AuthState(errorMessage: ''));
     }
   }
 

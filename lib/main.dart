@@ -7,6 +7,7 @@ import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/auth/service/device_service.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
 import 'package:scheduler/config/app_router.dart';
+import 'package:toastification/toastification.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -21,21 +22,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create:
-              (_) => AuthBloc(
-                firestore: FirebaseFirestore.instance,
-                auth: FirebaseAuth.instance,
-                deviceService: DeviceService(),
-              )..add(InitializeAuthEvent()),
+    return ToastificationWrapper(
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create:
+                (_) => AuthBloc(
+                  firestore: FirebaseFirestore.instance,
+                  auth: FirebaseAuth.instance,
+                  deviceService: DeviceService(),
+                )..add(InitializeAuthEvent()),
+          ),
+        ],
+        child: MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(scaffoldBackgroundColor: context.colors.background),
+          routerConfig: AppRouter.router,
         ),
-      ],
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(scaffoldBackgroundColor: context.colors.background),
-        routerConfig: AppRouter.router,
       ),
     );
   }

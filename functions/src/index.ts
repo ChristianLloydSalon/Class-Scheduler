@@ -7,7 +7,6 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 // import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
@@ -92,18 +91,7 @@ setGlobalOptions({
 
 // send notification if device id is added to firestore
 exports.sendSampleNotification = onDocumentCreated('users/{userId}/devices/{deviceId}', async (event) => {
-  const { userId, deviceId } = event.params;
-
-  const device = await admin.firestore().collection('users').doc(userId).collection('devices').doc(deviceId).get();
-
-  const deviceData = device.data();
-
-  const fcmToken = deviceData?.fcmToken;
-  
-  if (!fcmToken) {
-    logger.error(`No FCM token found for user ${userId} and device ${deviceId}`);
-    return;
-  }
+  const { userId } = event.params;
 
   await sendNotificationToUserDevices(userId, 'Sample Notification', 'This is a sample notification');
 });
