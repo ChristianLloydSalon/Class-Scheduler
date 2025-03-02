@@ -5,9 +5,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/common/component/action/primary_button.dart';
+import 'package:scheduler/common/component/communication/custom_toast.dart';
 import 'package:scheduler/common/component/input/primary_text_field.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
+import 'package:scheduler/faculty/presentation/screen/faculty_screen.dart';
 import 'package:scheduler/student/presentation/screen/student_screen.dart';
+import 'package:toastification/toastification.dart';
 
 enum RegisterType {
   none,
@@ -52,7 +55,27 @@ class SignUpScreen extends HookWidget {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.authenticated) {
-          context.pushReplacementNamed(StudentScreen.routeName);
+          showToast(
+            'Success',
+            'Account created successfully',
+            ToastificationType.success,
+          );
+
+          if (registerType.isFaculty) {
+            context.pushReplacementNamed(FacultyScreen.routeName);
+          } else {
+            context.pushReplacementNamed(StudentScreen.routeName);
+          }
+
+          return;
+        }
+
+        if (state.errorMessage != null) {
+          showToast(
+            'Error',
+            state.errorMessage ?? 'An unknown error occurred',
+            ToastificationType.error,
+          );
         }
       },
       child: Scaffold(

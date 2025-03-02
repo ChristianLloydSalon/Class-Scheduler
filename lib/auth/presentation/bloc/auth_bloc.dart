@@ -48,18 +48,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               )
               : UserRole.none;
 
-      final deviceId = await deviceService.getDeviceId();
-      final deviceInfo = await deviceService.getDeviceInfo();
-
-      await _firestore
-          .collection('users')
-          .doc(currentUser.uid)
-          .collection('devices')
-          .doc(deviceId)
-          .set({
-            'deviceInfo': deviceInfo,
-            'lastActiveAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+      await _updateUserDevices(currentUser.uid);
 
       emit(AuthState(authenticated: true, userId: currentUser.uid, role: role));
     } else {
@@ -79,22 +68,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 )
                 : UserRole.none;
 
-        final deviceId = await deviceService.getDeviceId();
-        final deviceInfo = await deviceService.getDeviceInfo();
-
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .collection('devices')
-            .doc(deviceId)
-            .set({
-              'deviceInfo': deviceInfo,
-              'lastActiveAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
+        await _updateUserDevices(user.uid);
 
         // save user to shared preferences
         await SharedPreferences.getInstance().then((prefs) {
-          prefs.setString('userId', currentUser?.uid ?? '');
+          prefs.setString('userId', user.uid);
           prefs.setString('role', role.name);
         });
 
@@ -103,6 +81,47 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         add(const UnauthenticatedEvent());
       }
     });
+  }
+
+  Future<void> _updateUserDevices(String userId) async {
+    final deviceId = await deviceService.getDeviceId();
+    final deviceInfo = await deviceService.getDeviceInfo();
+
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+
+    final deviceData = {
+      'deviceId': deviceId,
+      'deviceInfo': deviceInfo,
+      'lastActiveAt': FieldValue.serverTimestamp(),
+    };
+
+    if (userDoc.exists) {
+      final userData = userDoc.data() ?? {};
+      final List<dynamic> devices = userData['devices'] ?? [];
+
+      // Check if device already exists
+      final deviceIndex = devices.indexWhere(
+        (device) => device['deviceId'] == deviceId,
+      );
+
+      if (deviceIndex >= 0) {
+        // Update existing device
+        devices[deviceIndex] = deviceData;
+      } else {
+        // Add new device
+        devices.add(deviceData);
+      }
+
+      // Update user document with devices array
+      await _firestore.collection('users').doc(userId).update({
+        'devices': devices,
+      });
+    } else {
+      // Create user document with devices array if it doesn't exist
+      await _firestore.collection('users').doc(userId).set({
+        'devices': [deviceData],
+      }, SetOptions(merge: true));
+    }
   }
 
   void _onAuthenticated(AuthenticatedEvent event, Emitter<AuthState> emit) {
@@ -184,26 +203,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           return;
         }
 
-        await _firestore.collection('users').doc(currentUser.uid).set({
-          'name': event.name,
-          'email': event.email,
-          'universityId': event.id,
-          'role': event.role.name,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-
-        final deviceId = await deviceService.getDeviceId();
-        final deviceInfo = await deviceService.getDeviceInfo();
-
-        await _firestore
-            .collection('users')
-            .doc(currentUser.uid)
-            .collection('devices')
-            .doc(deviceId)
-            .set({
-              'deviceInfo': deviceInfo,
-              'lastActiveAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
+        await _updateUserDevices(currentUser.uid);
 
         // save user to shared preferences
         await SharedPreferences.getInstance().then((prefs) {
