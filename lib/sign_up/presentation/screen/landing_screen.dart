@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:scheduler/common/component/action/secondary_button.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
 import 'package:scheduler/sign_up/presentation/screen/sign_up_screen.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
+
+  static const route = '/landing';
+  static const routeName = 'landing';
 
   @override
   Widget build(BuildContext context) {
@@ -119,13 +123,9 @@ class _RegisterButtons extends StatelessWidget {
         SecondaryButton(
           width: double.infinity,
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        const SignUpScreen(registerType: RegisterType.student),
-              ),
+            context.pushNamed(
+              SignUpScreen.routeName,
+              extra: RegisterType.student,
             );
           },
           text: 'Register as Student',
@@ -133,13 +133,9 @@ class _RegisterButtons extends StatelessWidget {
         SecondaryButton(
           width: double.infinity,
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        const SignUpScreen(registerType: RegisterType.faculty),
-              ),
+            context.pushNamed(
+              SignUpScreen.routeName,
+              extra: RegisterType.faculty,
             );
           },
           text: 'Register as Faculty',

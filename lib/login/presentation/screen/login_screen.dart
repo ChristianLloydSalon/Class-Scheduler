@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:scheduler/common/component/action/primary_button.dart';
 import 'package:scheduler/common/component/input/primary_text_field.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
@@ -7,6 +8,9 @@ import 'package:scheduler/sign_up/presentation/screen/landing_screen.dart';
 
 class LoginScreen extends HookWidget {
   const LoginScreen({super.key});
+
+  static const route = '/login';
+  static const routeName = 'login';
 
   @override
   Widget build(BuildContext context) {
@@ -106,12 +110,7 @@ class LoginScreen extends HookWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LandingScreen(),
-                          ),
-                        );
+                        context.pushNamed(LandingScreen.routeName);
                       },
                       child: Text(
                         'Register now',

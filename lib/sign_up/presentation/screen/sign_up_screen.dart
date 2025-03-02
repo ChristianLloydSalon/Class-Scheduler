@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
+import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/common/component/action/primary_button.dart';
 import 'package:scheduler/common/component/input/primary_text_field.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
+import 'package:scheduler/student/presentation/screen/student_screen.dart';
 
 enum RegisterType {
+  none,
   student,
   faculty;
 
@@ -18,6 +23,9 @@ class SignUpScreen extends HookWidget {
 
   final RegisterType registerType;
 
+  static const route = '/sign-up';
+  static const routeName = 'sign-up';
+
   @override
   Widget build(BuildContext context) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
@@ -29,37 +37,52 @@ class SignUpScreen extends HookWidget {
 
     void handleSignUp() {
       if (formKey.currentState?.validate() ?? false) {
-        // TODO: Implement sign up logic
+        context.read<AuthBloc>().add(
+          AuthSignUpEvent(
+            name: nameController.text,
+            id: idController.text,
+            email: emailController.text,
+            password: passwordController.text,
+            role: registerType.isFaculty ? UserRole.faculty : UserRole.student,
+          ),
+        );
       }
     }
 
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          24,
-          40,
-          24,
-          40 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          children: [
-            const _Header(),
-            const SizedBox(height: 40),
-            _FormSection(
-              formKey: formKey,
-              nameController: nameController,
-              idController: idController,
-              emailController: emailController,
-              passwordController: passwordController,
-              confirmPasswordController: confirmPasswordController,
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              width: double.infinity,
-              onPressed: handleSignUp,
-              text: 'Sign Up',
-            ),
-          ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.authenticated) {
+          context.pushReplacementNamed(StudentScreen.routeName);
+        }
+      },
+      child: Scaffold(
+        body: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            40,
+            24,
+            40 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: Column(
+            children: [
+              const _Header(),
+              const SizedBox(height: 40),
+              _FormSection(
+                formKey: formKey,
+                nameController: nameController,
+                idController: idController,
+                emailController: emailController,
+                passwordController: passwordController,
+                confirmPasswordController: confirmPasswordController,
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(
+                width: double.infinity,
+                onPressed: handleSignUp,
+                text: 'Sign Up',
+              ),
+            ],
+          ),
         ),
       ),
     );
