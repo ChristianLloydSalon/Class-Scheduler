@@ -7,13 +7,10 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import {messaging} from "firebase-admin";
 import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
 import * as functions from 'firebase-functions';
-import { onDocumentWritten } from "firebase-functions/firestore";
 import { sendNotificationToUserDevices } from "./notification";
 
 // Initialize Firebase Admin
@@ -89,7 +86,7 @@ async function getSecret(secretName: string): Promise<string> {
 // send notification if device id is added to firestore
 exports.sendSampleNotification = functions.firestore.onDocumentCreated('users/{userId}/devices/{deviceId}', async (event) => {
   const { userId, deviceId } = event.params;
-  
+
   const device = await admin.firestore().collection('users').doc(userId).collection('devices').doc(deviceId).get();
 
   const deviceData = device.data();
