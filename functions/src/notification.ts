@@ -33,7 +33,6 @@ async function sendNotificationToUser(
       notification: {
         title,
         body,
-        imageUrl: 'https://example.com/image.jpg',
       },
       android: {
         priority: 'high',
@@ -51,7 +50,7 @@ async function sendNotificationToUser(
   }
 }
 
-async function sendNotificationToUserDevices(userId: string, title: string, body: string) {
+export async function sendNotificationToUserDevices(userId: string, title: string, body: string) {
   const userDevices = await admin.firestore()
     .collection('users')
     .doc(userId)

@@ -1,5 +1,6 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class DeviceService {
   static const String _deviceIdKey = 'device_id';
@@ -34,12 +35,15 @@ class DeviceService {
   Future<Map<String, dynamic>> getDeviceInfo() async {
     try {
       final androidInfo = await _deviceInfo.androidInfo;
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
       return {
         'brand': androidInfo.brand,
         'model': androidInfo.model,
         'androidVersion': androidInfo.version.release,
         'manufacturer': androidInfo.manufacturer,
         'isPhysicalDevice': androidInfo.isPhysicalDevice,
+        'fcmToken': fcmToken,
       };
     } catch (e) {
       return {

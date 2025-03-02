@@ -13,6 +13,8 @@ import * as admin from "firebase-admin";
 import {messaging} from "firebase-admin";
 import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
 import * as functions from 'firebase-functions';
+import { onDocumentWritten } from "firebase-functions/firestore";
+import { sendNotificationToUserDevices } from "./notification";
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -84,3 +86,20 @@ async function getSecret(secretName: string): Promise<string> {
   }
 }
 
+// send notification if device id is added to firestore
+exports.sendSampleNotification = functions.firestore.onDocumentCreated('users/{userId}/devices/{deviceId}', async (event) => {
+  const { userId, deviceId } = event.params;
+  
+  const device = await admin.firestore().collection('users').doc(userId).collection('devices').doc(deviceId).get();
+
+  const deviceData = device.data();
+
+  const fcmToken = deviceData?.fcmToken;
+  
+  if (!fcmToken) {
+    logger.error(`No FCM token found for user ${userId} and device ${deviceId}`);
+    return;
+  }
+
+  await sendNotificationToUserDevices(userId, 'Sample Notification', 'This is a sample notification');
+});
