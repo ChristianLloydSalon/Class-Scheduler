@@ -28,14 +28,6 @@ class EmptyAnnouncementView extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () {
-                // Refresh action
-              },
-              icon: const Icon(Icons.refresh),
-              label: Text('Refresh', style: theme.textTheme.labelLarge),
-            ),
           ],
         ),
       ),

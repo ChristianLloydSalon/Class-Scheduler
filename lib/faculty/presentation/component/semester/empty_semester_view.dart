@@ -35,25 +35,6 @@ class EmptySemesterView extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () {
-                // This would typically trigger a refresh
-              },
-              icon: Icon(Icons.refresh, color: theme.colorScheme.primary),
-              label: Text(
-                'Refresh',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: theme.colorScheme.primary),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
           ],
         ),
       ),

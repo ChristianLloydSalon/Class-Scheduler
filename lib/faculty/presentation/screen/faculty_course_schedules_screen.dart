@@ -161,6 +161,27 @@ class ScheduleTab extends HookWidget {
 
     return Column(
       children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            border: Border(bottom: BorderSide(color: context.colors.border)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Class Schedule',
+                style: context.textStyles.heading1.textPrimary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Select a day to view and manage your class schedules',
+                style: context.textStyles.body2.textSecondary,
+              ),
+            ],
+          ),
+        ),
         ScheduleDaySelector(
           days: weekdays,
           selectedIndex: selectedDayIndex.value,
@@ -379,6 +400,27 @@ class _ExamScheduleTabState extends State<ExamScheduleTab> {
 
     return Column(
       children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            border: Border(bottom: BorderSide(color: context.colors.border)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Exam Schedule',
+                style: context.textStyles.heading1.textPrimary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Manage and track your upcoming examinations',
+                style: context.textStyles.body2.textSecondary,
+              ),
+            ],
+          ),
+        ),
         Expanded(
           child: FirestoreListView<Map<String, dynamic>>(
             query: examSchedulesQuery,
@@ -507,189 +549,231 @@ class StudentsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FirestoreListView<Map<String, dynamic>>(
-      query: FirebaseFirestore.instance
-          .collection('class_students')
-          .where('courseId', isEqualTo: courseId)
-          .where('semesterId', isEqualTo: semesterId)
-          .orderBy('universityId'),
-      padding: const EdgeInsets.all(16),
-      loadingBuilder:
-          (context) => Center(
-            child: CircularProgressIndicator(color: context.colors.primary),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            border: Border(bottom: BorderSide(color: context.colors.border)),
           ),
-      errorBuilder:
-          (context, error, _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: context.colors.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Error loading students',
-                  style: context.textStyles.body1.error,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  style: context.textStyles.caption1.textSecondary,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-      emptyBuilder:
-          (context) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  size: 64,
-                  color: context.colors.primary.withOpacity(0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No Students Yet',
-                  style: context.textStyles.subtitle1.textPrimary,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Students will appear here once enrolled',
-                  style: context.textStyles.body2.textSecondary,
-                ),
-              ],
-            ),
-          ),
-      itemBuilder: (context, snapshot) {
-        final data = snapshot.data();
-        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream:
-              FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(data['studentId'])
-                  .snapshots(),
-          builder: (context, userSnapshot) {
-            final userData = userSnapshot.data?.data();
-            final firstName = userData?['firstName'] as String? ?? '';
-            final lastName = userData?['lastName'] as String? ?? '';
-            final fullName = '$firstName $lastName'.trim();
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: context.colors.border),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Class Students',
+                style: context.textStyles.heading1.textPrimary,
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: context.colors.primary.withOpacity(
-                            0.1,
-                          ),
-                          child: Text(
-                            firstName.isNotEmpty ? firstName[0] : '?',
-                            style: context.textStyles.body2.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 8),
+              Text(
+                'View and manage students enrolled in this class',
+                style: context.textStyles.body2.textSecondary,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: FirestoreListView<Map<String, dynamic>>(
+            query: FirebaseFirestore.instance
+                .collection('class_students')
+                .where('courseId', isEqualTo: courseId)
+                .where('semesterId', isEqualTo: semesterId)
+                .orderBy('universityId'),
+            padding: const EdgeInsets.all(16),
+            loadingBuilder:
+                (context) => Center(
+                  child: CircularProgressIndicator(
+                    color: context.colors.primary,
+                  ),
+                ),
+            errorBuilder:
+                (context, error, _) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: context.colors.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading students',
+                        style: context.textStyles.body1.error,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        error.toString(),
+                        style: context.textStyles.caption1.textSecondary,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+            emptyBuilder:
+                (context) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 64,
+                        color: context.colors.primary.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No Students Yet',
+                        style: context.textStyles.subtitle1.textPrimary,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Students will appear here once enrolled',
+                        style: context.textStyles.body2.textSecondary,
+                      ),
+                    ],
+                  ),
+                ),
+            itemBuilder: (context, snapshot) {
+              final data = snapshot.data();
+              return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream:
+                    FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(data['studentId'])
+                        .snapshots(),
+                builder: (context, userSnapshot) {
+                  final userData = userSnapshot.data?.data();
+                  final firstName = userData?['firstName'] as String? ?? '';
+                  final lastName = userData?['lastName'] as String? ?? '';
+                  final fullName = '$firstName $lastName'.trim();
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: context.colors.border),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              if (fullName.isNotEmpty) ...[
-                                Text(
-                                  fullName,
-                                  style:
-                                      context.textStyles.subtitle1.textPrimary,
+                              CircleAvatar(
+                                backgroundColor: context.colors.primary
+                                    .withOpacity(0.1),
+                                child: Text(
+                                  firstName.isNotEmpty ? firstName[0] : '?',
+                                  style: context.textStyles.body2.primary,
                                 ),
-                                const SizedBox(height: 4),
-                              ],
-                              Text(
-                                'ID: ${data['universityId'] ?? 'N/A'}',
-                                style:
-                                    fullName.isEmpty
-                                        ? context
-                                            .textStyles
-                                            .subtitle1
-                                            .textPrimary
-                                        : context
-                                            .textStyles
-                                            .body2
-                                            .textSecondary,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                data['email'] ?? 'No email',
-                                style: context.textStyles.body2.textSecondary,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (fullName.isNotEmpty) ...[
+                                      Text(
+                                        fullName,
+                                        style:
+                                            context
+                                                .textStyles
+                                                .subtitle1
+                                                .textPrimary,
+                                      ),
+                                      const SizedBox(height: 4),
+                                    ],
+                                    Text(
+                                      'ID: ${data['universityId'] ?? 'N/A'}',
+                                      style:
+                                          fullName.isEmpty
+                                              ? context
+                                                  .textStyles
+                                                  .subtitle1
+                                                  .textPrimary
+                                              : context
+                                                  .textStyles
+                                                  .body2
+                                                  .textSecondary,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      data['email'] ?? 'No email',
+                                      style:
+                                          context
+                                              .textStyles
+                                              .body2
+                                              .textSecondary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (data['isIrregular'] == true)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: context.colors.warning.withOpacity(
+                                      0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        size: 16,
+                                        color: context.colors.warning,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Irregular',
+                                        style:
+                                            context.textStyles.caption2.warning,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Added on',
+                                    style:
+                                        context
+                                            .textStyles
+                                            .caption1
+                                            .textSecondary,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _formatDate(data['createdAt']),
+                                    style: context.textStyles.body2.textPrimary,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ),
-                        if (data['isIrregular'] == true)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: context.colors.warning.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.warning_amber_rounded,
-                                  size: 16,
-                                  color: context.colors.warning,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Irregular',
-                                  style: context.textStyles.caption2.warning,
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const Divider(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Added on',
-                              style: context.textStyles.caption1.textSecondary,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatDate(data['createdAt']),
-                              style: context.textStyles.body2.textPrimary,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

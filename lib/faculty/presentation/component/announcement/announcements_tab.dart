@@ -200,6 +200,27 @@ class AnnouncementsTab extends HookWidget {
 
     return Column(
       children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            border: Border(bottom: BorderSide(color: context.colors.border)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Announcements',
+                style: context.textStyles.heading1.textPrimary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Keep your students informed with important updates and notices',
+                style: context.textStyles.body2.textSecondary,
+              ),
+            ],
+          ),
+        ),
         Expanded(
           child: FirestoreListView<Map<String, dynamic>>(
             query: announcementsQuery,
@@ -233,21 +254,6 @@ class AnnouncementsTab extends HookWidget {
                           error.toString(),
                           style: context.textStyles.body3.textSecondary,
                           textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: () {
-                            // Force refresh
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: context.colors.primary,
-                            foregroundColor: context.colors.surface,
-                          ),
-                          icon: const Icon(Icons.refresh),
-                          label: Text(
-                            'Retry',
-                            style: context.textStyles.body2.surface,
-                          ),
                         ),
                       ],
                     ),

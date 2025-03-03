@@ -33,101 +33,109 @@ class FacultyScreen extends HookWidget {
       child: Scaffold(
         key: scaffoldKey.value,
         backgroundColor: context.colors.background,
-        appBar: FacultyAppBar(
-          title: 'Semesters',
-          actions: [
-            IconButton(
-              icon: Icon(Icons.search, color: context.colors.textPrimary),
-              onPressed: () {
-                // Implement search functionality
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: context.colors.textPrimary,
-              ),
-              onPressed: () {
-                // Implement notifications
-              },
-            ),
-          ],
-        ),
+        appBar: FacultyAppBar(title: 'Semesters'),
         drawer: const FacultyDrawer(currentRoute: route),
         body: SafeArea(
-          child: FirestoreListView<Map<String, dynamic>>(
-            query: semestersQuery,
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (context, snapshot) {
-              final semester = snapshot.data();
-              semester['id'] = snapshot.id;
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  border: Border(
+                    bottom: BorderSide(color: context.colors.border),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Academic Semesters',
+                      style: context.textStyles.heading1.textPrimary,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Select a semester to view and manage your assigned courses',
+                      style: context.textStyles.body2.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: FirestoreListView<Map<String, dynamic>>(
+                  query: semestersQuery,
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, snapshot) {
+                    final semester = snapshot.data();
+                    semester['id'] = snapshot.id;
 
-              return SemesterCard(
-                semester: semester,
-                onTap:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => FacultyCoursesScreen(
-                              semesterId: semester['id'] as String,
-                              semesterName:
-                                  'Semester ${semester['semester']}, Year ${semester['year']}',
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: SemesterCard(
+                        semester: semester,
+                        onTap:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => FacultyCoursesScreen(
+                                      semesterId: semester['id'] as String,
+                                      semesterName:
+                                          'Semester ${semester['semester']}, Year ${semester['year']}',
+                                    ),
+                              ),
                             ),
                       ),
-                    ),
-              );
-            },
-            loadingBuilder:
-                (context) => Center(
-                  child: CircularProgressIndicator(
-                    color: context.colors.primary,
-                  ),
-                ),
-            errorBuilder:
-                (context, error, stackTrace) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 60,
-                          color: context.colors.error,
+                    );
+                  },
+                  loadingBuilder:
+                      (context) => Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              color: context.colors.primary,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading semesters...',
+                              style: context.textStyles.body2.textSecondary,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Error loading semesters',
-                          style: context.textStyles.subtitle1.error,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          error.toString(),
-                          style: context.textStyles.body2.textSecondary,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: () {
-                            // Force refresh
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: context.colors.primary,
-                            foregroundColor: context.colors.surface,
-                          ),
-                          icon: const Icon(Icons.refresh),
-                          label: Text(
-                            'Retry',
-                            style: context.textStyles.body2.surface,
+                      ),
+                  errorBuilder:
+                      (context, error, stackTrace) => Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline_rounded,
+                                size: 64,
+                                color: context.colors.error,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Unable to Load Semesters',
+                                style: context.textStyles.subtitle1.error,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'We encountered an error while loading the semesters. Please try again.',
+                                style: context.textStyles.body2.textSecondary,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                  emptyBuilder: (context) => const EmptySemesterView(),
                 ),
-            emptyBuilder: (context) => const EmptySemesterView(),
+              ),
+            ],
           ),
         ),
       ),
