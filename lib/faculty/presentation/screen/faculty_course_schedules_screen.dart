@@ -7,6 +7,13 @@ import '../component/schedule/schedule_card.dart';
 import '../component/schedule/empty_schedule_view.dart';
 import '../component/announcement/announcements_tab.dart';
 import '../../../../common/theme/app_theme.dart';
+import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
+import 'package:toastification/toastification.dart';
+import '../../../../common/component/action/primary_button.dart';
+import '../../../../common/component/communication/custom_toast.dart';
+import '../component/exam/exam_schedule_card.dart';
+import '../component/exam/exam_schedule_form.dart';
+import '../component/exam/empty_exam_view.dart';
 
 class FacultyCourseSchedulesScreen extends HookWidget {
   final String semesterId;
@@ -61,7 +68,7 @@ class FacultyCourseSchedulesScreen extends HookWidget {
         body: TabBarView(
           children: [
             ScheduleTab(semesterId: semesterId, courseId: courseId),
-            const ExamScheduleTab(),
+            ExamScheduleTab(courseId: courseId, semesterId: semesterId),
             AnnouncementsTab(courseId: courseId, semesterId: semesterId),
             StudentsTab(courseId: courseId, semesterId: semesterId),
           ],
@@ -223,16 +230,267 @@ class ScheduleTab extends HookWidget {
   }
 }
 
-class ExamScheduleTab extends StatelessWidget {
-  const ExamScheduleTab({super.key});
+class ExamScheduleTab extends StatefulWidget {
+  final String courseId;
+  final String semesterId;
+
+  const ExamScheduleTab({
+    super.key,
+    required this.courseId,
+    required this.semesterId,
+  });
+
+  @override
+  State<ExamScheduleTab> createState() => _ExamScheduleTabState();
+}
+
+class _ExamScheduleTabState extends State<ExamScheduleTab> {
+  final _isSubmitting = ValueNotifier<bool>(false);
+
+  Future<void> addExamSchedule(
+    BuildContext context,
+    String title,
+    DateTime date,
+    TimeOfDay startTime,
+    TimeOfDay endTime,
+    String room,
+  ) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final examData = {
+        'title': title,
+        'date': Timestamp.fromDate(date),
+        'startTime': {'hour': startTime.hour, 'minute': startTime.minute},
+        'endTime': {'hour': endTime.hour, 'minute': endTime.minute},
+        'room': room,
+        'courseId': widget.courseId,
+        'semesterId': widget.semesterId,
+        'teacherId': userId,
+        'createdAt': Timestamp.now(),
+      };
+
+      await FirebaseFirestore.instance
+          .collection('exam_schedules')
+          .add(examData);
+
+      if (context.mounted) {
+        showToast(
+          'Success',
+          'Exam schedule added successfully',
+          ToastificationType.success,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        showToast(
+          'Error',
+          'Failed to add exam schedule',
+          ToastificationType.error,
+        );
+      }
+    }
+  }
+
+  Future<void> deleteExamSchedule(BuildContext context, String examId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('exam_schedules')
+          .doc(examId)
+          .delete();
+
+      if (context.mounted) {
+        showToast(
+          'Success',
+          'Exam schedule deleted successfully',
+          ToastificationType.success,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        showToast(
+          'Error',
+          'Failed to delete exam schedule',
+          ToastificationType.error,
+        );
+      }
+    }
+  }
+
+  void showAddExamDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder:
+          (context) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ValueListenableBuilder(
+              valueListenable: _isSubmitting,
+              builder:
+                  (context, isSubmitting, _) => ExamScheduleForm(
+                    isLoading: isSubmitting,
+                    onSubmit: (title, date, startTime, endTime, room) async {
+                      _isSubmitting.value = true;
+                      try {
+                        await addExamSchedule(
+                          context,
+                          title,
+                          date,
+                          startTime,
+                          endTime,
+                          room,
+                        );
+                        if (context.mounted) Navigator.pop(context);
+                      } finally {
+                        _isSubmitting.value = false;
+                      }
+                    },
+                  ),
+            ),
+          ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _isSubmitting.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Exam Schedule Coming Soon',
-        style: context.textStyles.subtitle1.textSecondary,
-      ),
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    final examSchedulesQuery = FirebaseFirestore.instance
+        .collection('exam_schedules')
+        .where('courseId', isEqualTo: widget.courseId)
+        .where('semesterId', isEqualTo: widget.semesterId)
+        .where('teacherId', isEqualTo: userId)
+        .orderBy('date')
+        .orderBy('startTime.hour')
+        .orderBy('startTime.minute');
+
+    return Column(
+      children: [
+        Expanded(
+          child: FirestoreListView<Map<String, dynamic>>(
+            query: examSchedulesQuery,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            loadingBuilder:
+                (context) => Center(
+                  child: CircularProgressIndicator(
+                    color: context.colors.primary,
+                  ),
+                ),
+            errorBuilder:
+                (context, error, stackTrace) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 60,
+                          color: context.colors.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Failed to load exam schedules',
+                          style: context.textStyles.subtitle1.error,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          error.toString(),
+                          style: context.textStyles.body3.textSecondary,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            emptyBuilder: (context) => const EmptyExamView(),
+            itemBuilder: (context, snapshot) {
+              final data = snapshot.data();
+              final date = (data['date'] as Timestamp).toDate();
+              final startTime = TimeOfDay(
+                hour: data['startTime']['hour'] as int,
+                minute: data['startTime']['minute'] as int,
+              );
+              final endTime = TimeOfDay(
+                hour: data['endTime']['hour'] as int,
+                minute: data['endTime']['minute'] as int,
+              );
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: ExamScheduleCard(
+                  title: data['title'] as String,
+                  date: date,
+                  startTime: startTime,
+                  endTime: endTime,
+                  room: data['room'] as String,
+                  onDelete: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            title: Text(
+                              'Delete Exam Schedule',
+                              style: context.textStyles.subtitle1.textPrimary,
+                            ),
+                            content: Text(
+                              'Are you sure you want to delete this exam schedule?',
+                              style: context.textStyles.body2.textSecondary,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(
+                                  'Cancel',
+                                  style: context.textStyles.body2.textSecondary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(
+                                  'Delete',
+                                  style: context.textStyles.body2.error,
+                                ),
+                              ),
+                            ],
+                          ),
+                    );
+
+                    if (confirmed == true) {
+                      await deleteExamSchedule(context, snapshot.id);
+                    }
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            border: Border(top: BorderSide(color: context.colors.border)),
+          ),
+          child: PrimaryButton(
+            onPressed: () => showAddExamDialog(context),
+            text: 'Add Exam Schedule',
+          ),
+        ),
+      ],
     );
   }
 }

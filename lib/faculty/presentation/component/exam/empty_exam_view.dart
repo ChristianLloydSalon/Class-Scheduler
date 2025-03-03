@@ -1,43 +1,31 @@
 import 'package:flutter/material.dart';
+import '../../../../common/theme/app_theme.dart';
 
 class EmptyExamView extends StatelessWidget {
-  final String message;
-
-  const EmptyExamView({super.key, required this.message});
+  const EmptyExamView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.assignment_outlined,
-              size: 80,
-              color: theme.colorScheme.outline,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () {
-                // Refresh action
-              },
-              icon: const Icon(Icons.refresh),
-              label: Text('Refresh', style: theme.textTheme.labelLarge),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.event_note_outlined,
+            size: 64,
+            color: context.colors.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No exam schedules yet',
+            style: context.textStyles.subtitle1.textPrimary,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add one by tapping the button below',
+            style: context.textStyles.body2.textHint,
+          ),
+        ],
       ),
     );
   }

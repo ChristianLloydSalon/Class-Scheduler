@@ -1,122 +1,94 @@
 import 'package:flutter/material.dart';
+import '../../../../common/theme/app_theme.dart';
 
 class ExamScheduleCard extends StatelessWidget {
-  final String type;
   final String title;
-  final String date;
-  final String timeSlot;
-  final String location;
-  final VoidCallback onTap;
+  final DateTime date;
+  final TimeOfDay startTime;
+  final TimeOfDay endTime;
+  final String room;
+  final VoidCallback? onDelete;
 
   const ExamScheduleCard({
     super.key,
-    required this.type,
     required this.title,
     required this.date,
-    required this.timeSlot,
-    required this.location,
-    required this.onTap,
+    required this.startTime,
+    required this.endTime,
+    required this.room,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: context.colors.border),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.secondaryContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      type,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSecondaryContainer,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.tertiaryContainer.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  date,
-                  style: TextStyle(
-                    color: theme.colorScheme.onTertiaryContainer,
-                    fontWeight: FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: context.textStyles.subtitle1.textPrimary,
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    timeSlot,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                if (onDelete != null)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: context.colors.error,
                     ),
+                    onPressed: onDelete,
                   ),
-                  const SizedBox(width: 16),
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 16,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    location,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: context.colors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  date.toString().split(' ')[0],
+                  style: context.textStyles.body2.textSecondary,
+                ),
+                const SizedBox(width: 16),
+                Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color: context.colors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${startTime.format(context)} - ${endTime.format(context)}',
+                  style: context.textStyles.body2.textSecondary,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.room_outlined,
+                  size: 16,
+                  color: context.colors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(room, style: context.textStyles.body2.textSecondary),
+              ],
+            ),
+          ],
         ),
       ),
     );

@@ -208,3 +208,86 @@ exports.sendAnnouncementNotification = onDocumentCreated('announcements/{announc
     console.error('Error sending announcement notification:', error);
   }
 });
+
+// Send notification when exam schedule is created
+exports.sendExamScheduleNotification = onDocumentCreated('exam_schedules/{examId}', async (event) => {
+  try {
+    const examSchedule = event.data?.data();
+    if (!examSchedule) {
+      console.log('No exam schedule data found');
+      return;
+    }
+
+    // Get the course details
+    const courseDoc = await admin.firestore()
+      .collection('courses')
+      .doc(examSchedule.courseId)
+      .get();
+    
+    const courseData = courseDoc.data();
+    if (!courseData) {
+      console.log('No course data found for:', examSchedule.courseId);
+      return;
+    }
+
+    // Get all students from class_students collection
+    const classStudentsSnapshot = await admin.firestore()
+      .collection('class_students')
+      .where('courseId', '==', examSchedule.courseId)
+      .where('semesterId', '==', examSchedule.semesterId)
+      .get();
+
+    // Get all student IDs
+    const studentIds = classStudentsSnapshot.docs.map(doc => doc.data().studentId);
+
+    if (studentIds.length === 0) {
+      console.log('No students found for course:', examSchedule.courseId);
+      return;
+    }
+
+    // Format date and time for notification
+    const examDate = examSchedule.date.toDate();
+    const formattedDate = examDate.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+
+    const formatTime = (time: { hour: number; minute: number }) => {
+      const hour = time.hour % 12 || 12;
+      const minute = time.minute.toString().padStart(2, '0');
+      const period = time.hour < 12 ? 'AM' : 'PM';
+      return `${hour}:${minute} ${period}`;
+    };
+
+    // Prepare notification content
+    const title = `New Exam Schedule: ${courseData.code}`;
+    const body = `${examSchedule.title} on ${formattedDate} at ${formatTime(examSchedule.startTime)} in ${examSchedule.room}`;
+
+    // Process students in batches of 500 to avoid memory issues
+    const batchSize = 500;
+    for (let i = 0; i < studentIds.length; i += batchSize) {
+      const batch = studentIds.slice(i, i + batchSize);
+      
+      // Get all device tokens for each student in the batch and send notifications
+      const batchPromises = batch.map(async (studentId) => {
+        try {
+          const tokens = await getUserDeviceTokens(studentId);
+          return tokens.map(token => sendNotification(token, title, body));
+        } catch (error) {
+          console.error(`Error getting devices for student ${studentId}:`, error);
+          return [];
+        }
+      });
+
+      // Wait for all notifications in this batch to complete
+      await Promise.all((await Promise.all(batchPromises)).flat());
+      console.log(`Processed batch of ${batch.length} students`);
+    }
+    
+    console.log(`Successfully sent notifications for exam schedule ${event.params.examId} to ${studentIds.length} students`);
+
+  } catch (error) {
+    console.error('Error sending exam schedule notification:', error);
+  }
+});
