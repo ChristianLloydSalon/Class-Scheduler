@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import '../../../domain/model/announcement.dart';
 import '../../../../common/theme/app_theme.dart';
 
 class AnnouncementCard extends StatelessWidget {
