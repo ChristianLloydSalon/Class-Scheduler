@@ -95,9 +95,9 @@ setGlobalOptions({
 
 interface DeviceInfo {
   deviceId: string;
-  fcmToken: string;
   deviceInfo: {
     androidVersion: string;
+    fcmToken: string;
     brand: string;
     manufacturer: string;
     model: string;
@@ -151,7 +151,7 @@ async function getUserDeviceTokens(userId: string): Promise<string[]> {
 
   const devices = userData.devices as DeviceInfo[];
   const tokens = devices
-    .map(device => device.fcmToken)
+    .map(device => device.deviceInfo.fcmToken)
     .filter(token => token !== undefined && token !== null);
     
   console.log(`Found ${tokens.length} valid tokens for user: ${userId}`);
