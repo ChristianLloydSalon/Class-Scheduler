@@ -89,13 +89,6 @@ setGlobalOptions({
 //   }
 // }
 
-// send notification if device id is added to firestore
-exports.sendSampleNotification = onDocumentCreated('users/{userId}/devices/{deviceId}', async (event) => {
-  const { userId } = event.params;
-
-  await sendNotificationToUserDevices(userId, 'Sample Notification', 'This is a sample notification');
-});
-
 interface DeviceInfo {
   deviceId: string;
   fcmToken: string;

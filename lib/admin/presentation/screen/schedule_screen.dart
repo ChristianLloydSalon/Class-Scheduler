@@ -87,6 +87,28 @@ class ScheduleScreen extends HookWidget {
                     child: AddStudentModal(
                       onConfirm: (studentId, isIrregular) async {
                         try {
+                          // First check if student exists in users collection
+                          final studentQuery =
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .where('universityId', isEqualTo: studentId)
+                                  .where('role', isEqualTo: 'student')
+                                  .get();
+
+                          if (studentQuery.docs.isEmpty) {
+                            if (context.mounted) {
+                              showToast(
+                                'Error',
+                                'Student not found. Please check the ID',
+                                ToastificationType.error,
+                              );
+                            }
+                            return;
+                          }
+
+                          final studentData = studentQuery.docs.first.data();
+                          final studentUserId = studentQuery.docs.first.id;
+
                           // Check if student already exists in this class
                           final existingStudent =
                               await FirebaseFirestore.instance
@@ -97,7 +119,7 @@ class ScheduleScreen extends HookWidget {
                                     isEqualTo: departmentId,
                                   )
                                   .where('courseId', isEqualTo: courseId)
-                                  .where('studentId', isEqualTo: studentId)
+                                  .where('studentId', isEqualTo: studentUserId)
                                   .get();
 
                           if (existingStudent.docs.isNotEmpty) {
@@ -111,13 +133,17 @@ class ScheduleScreen extends HookWidget {
                             return;
                           }
 
+                          // Add student to class with their details
                           await FirebaseFirestore.instance
                               .collection('class_students')
                               .add({
                                 'semesterId': semesterId,
                                 'departmentId': departmentId,
                                 'courseId': courseId,
-                                'studentId': studentId,
+                                'studentId': studentUserId,
+                                'universityId': studentData['universityId'],
+                                'email': studentData['email'],
+                                'name': studentData['name'],
                                 'isIrregular': isIrregular,
                                 'createdAt': FieldValue.serverTimestamp(),
                               });

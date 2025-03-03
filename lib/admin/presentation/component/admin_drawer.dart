@@ -1,100 +1,162 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AdminDrawer extends StatelessWidget {
   final VoidCallback onProfileTap;
   final VoidCallback onWebsiteTap;
   final VoidCallback onLogoutTap;
+  final String? currentRoute;
 
   const AdminDrawer({
     super.key,
     required this.onProfileTap,
     required this.onWebsiteTap,
     required this.onLogoutTap,
+    this.currentRoute,
   });
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user?.email ?? '';
+
     return Drawer(
-      backgroundColor: Colors.white,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 48),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: context.colors.inputBorder),
+      backgroundColor: context.colors.surface,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: context.colors.primary.withOpacity(0.05),
+                border: Border(
+                  bottom: BorderSide(color: context.colors.border),
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 80,
-                  width: 80,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.indigo.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        height: 64,
+                        width: 64,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: context.colors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: context.icons.adminLogo,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Administrator',
+                              style: context.textStyles.subtitle1.textPrimary,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (email.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                email,
+                                style:
+                                    context.textStyles.caption1.textSecondary,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  child: context.icons.adminLogo,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'CIT Administrator',
-                  style: context.textStyles.heading3.textPrimary,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Manage your institution',
-                  style: context.textStyles.caption1.textSecondary,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          _DrawerItem(
-            icon: Icons.person_outline,
-            title: 'Profile',
-            onTap: onProfileTap,
-          ),
-          _DrawerItem(
-            icon: Icons.language_outlined,
-            title: 'Website',
-            onTap: onWebsiteTap,
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: InkWell(
-              onTap: onLogoutTap,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.logout_rounded,
-                      color: Colors.red[700],
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Text('Logout', style: context.textStyles.caption1.error),
-                  ],
-                ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Admin Portal',
+                    style: context.textStyles.heading2.textPrimary,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manage your institution',
+                    style: context.textStyles.body2.textSecondary,
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-        ],
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  const SizedBox(height: 8),
+                  _SectionTitle(title: 'Management'),
+                  _DrawerItem(
+                    icon: Icons.person_outline_rounded,
+                    title: 'Profile',
+                    subtitle: 'View and manage your profile',
+                    onTap: () {
+                      Navigator.pop(context);
+                      onProfileTap();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _SectionTitle(title: 'Resources'),
+                  _DrawerItem(
+                    icon: Icons.language_rounded,
+                    title: 'School Website',
+                    subtitle: 'Visit our official website',
+                    trailing: Icon(
+                      Icons.open_in_new_rounded,
+                      size: 16,
+                      color: context.colors.textSecondary,
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onWebsiteTap();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: context.colors.border)),
+              ),
+              child: _DrawerItem(
+                icon: Icons.logout_rounded,
+                title: 'Sign Out',
+                subtitle: 'End your current session',
+                textColor: context.colors.error,
+                iconColor: context.colors.error,
+                onTap: () {
+                  Navigator.pop(context);
+                  onLogoutTap();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SectionTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: context.textStyles.body1.textSecondary,
       ),
     );
   }
@@ -103,28 +165,42 @@ class AdminDrawer extends StatelessWidget {
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
+  final Widget? trailing;
   final VoidCallback onTap;
+  final Color? textColor;
+  final Color? iconColor;
 
   const _DrawerItem({
     required this.icon,
     required this.title,
+    this.subtitle,
+    this.trailing,
     required this.onTap,
+    this.textColor,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Icon(icon, color: context.colors.textPrimary, size: 20),
-            const SizedBox(width: 12),
-            Text(title, style: context.textStyles.body1.textPrimary),
-          ],
+    return ListTile(
+      leading: Icon(icon, color: iconColor ?? context.colors.textPrimary),
+      title: Text(
+        title,
+        style: context.textStyles.body1.baseStyle.copyWith(
+          color: textColor ?? context.colors.textPrimary,
         ),
       ),
+      subtitle:
+          subtitle != null
+              ? Text(
+                subtitle!,
+                style: context.textStyles.caption1.textSecondary,
+              )
+              : null,
+      trailing: trailing,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      onTap: onTap,
     );
   }
 }

@@ -44,7 +44,7 @@ class ClassStudentsScreen extends StatelessWidget {
                 .where('semesterId', isEqualTo: semesterId)
                 .where('departmentId', isEqualTo: departmentId)
                 .where('courseId', isEqualTo: courseId)
-                .orderBy('studentId'),
+                .orderBy('universityId'),
             loadingBuilder:
                 (context) => const Center(child: CircularProgressIndicator()),
             errorBuilder:
@@ -96,55 +96,175 @@ class ClassStudentsScreen extends StatelessWidget {
                 ),
             itemBuilder: (context, snapshot) {
               final data = snapshot.data();
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                  child: Text(
-                    data['studentId'][0],
-                    style: context.textStyles.body2.primary,
-                  ),
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: context.colors.border),
                 ),
-                title: Text(
-                  data['studentId'],
-                  style: context.textStyles.body1.textPrimary,
-                ),
-                subtitle: Text(
-                  data['name'] ?? 'Student',
-                  style: context.textStyles.caption1.textSecondary,
-                ),
-                trailing:
-                    data['isIrregular'] == true
-                        ? Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: context.colors.primary.withOpacity(
+                              0.1,
+                            ),
+                            child: Text(
+                              data['universityId']?[0] ?? '?',
+                              style: context.textStyles.body2.primary,
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ID: ${data['universityId'] ?? 'N/A'}',
+                                  style:
+                                      context.textStyles.subtitle1.textPrimary,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  data['email'] ?? 'No email',
+                                  style: context.textStyles.body2.textSecondary,
+                                ),
+                              ],
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                size: 16,
-                                color: Colors.orange[700],
+                          if (data['isIrregular'] == true)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
                               ),
-                              const SizedBox(width: 4),
+                              decoration: BoxDecoration(
+                                color: context.colors.warning.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 16,
+                                    color: context.colors.warning,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Irregular',
+                                    style: context.textStyles.caption2.warning,
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      const Divider(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                'Irregular',
-                                style: context.textStyles.caption2.warning,
+                                'Added on',
+                                style:
+                                    context.textStyles.caption1.textSecondary,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _formatDate(data['createdAt']),
+                                style: context.textStyles.body2.textPrimary,
                               ),
                             ],
                           ),
-                        )
-                        : null,
+                          IconButton(
+                            onPressed: () {
+                              // TODO: Implement remove student
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (context) => AlertDialog(
+                                      title: Text(
+                                        'Remove Student',
+                                        style:
+                                            context
+                                                .textStyles
+                                                .subtitle1
+                                                .textPrimary,
+                                      ),
+                                      content: Text(
+                                        'Are you sure you want to remove this student from the class?',
+                                        style:
+                                            context
+                                                .textStyles
+                                                .body2
+                                                .textSecondary,
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed:
+                                              () => Navigator.pop(context),
+                                          child: Text(
+                                            'Cancel',
+                                            style:
+                                                context
+                                                    .textStyles
+                                                    .body2
+                                                    .textSecondary,
+                                          ),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () {
+                                            // Delete the document
+                                            snapshot.reference.delete();
+                                            Navigator.pop(context);
+                                          },
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor:
+                                                context.colors.error,
+                                          ),
+                                          child: Text(
+                                            'Remove',
+                                            style:
+                                                context
+                                                    .textStyles
+                                                    .body2
+                                                    .surface,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: context.colors.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  String _formatDate(dynamic timestamp) {
+    if (timestamp == null) return 'N/A';
+    if (timestamp is! Timestamp) return 'Invalid date';
+
+    final date = timestamp.toDate();
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

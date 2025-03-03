@@ -37,7 +37,10 @@ class AddStudentModal extends HookWidget {
               controller: studentId,
               hintText: '012345',
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ],
             ),
             const SizedBox(height: 16),
             InkWell(

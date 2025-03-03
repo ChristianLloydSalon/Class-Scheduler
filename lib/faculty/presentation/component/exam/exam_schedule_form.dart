@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../common/component/input/primary_text_field.dart';
 import '../../../../common/theme/app_theme.dart';
