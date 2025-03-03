@@ -36,15 +36,6 @@ class LoginScreen extends HookWidget {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.authenticated) {
-          if (state.role.isNone) {
-            showToast(
-              'Error 404',
-              'User role not found',
-              ToastificationType.error,
-            );
-            return;
-          }
-
           context.pushReplacementNamed(
             state.role.isStudent
                 ? StudentScreen.routeName

@@ -89,11 +89,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     final userDoc = await _firestore.collection('users').doc(userId).get();
 
-    final deviceData = {
-      'deviceId': deviceId,
-      'deviceInfo': deviceInfo,
-      'lastActiveAt': FieldValue.serverTimestamp(),
-    };
+    final deviceData = {'deviceId': deviceId, 'deviceInfo': deviceInfo};
 
     if (userDoc.exists) {
       final userData = userDoc.data() ?? {};
@@ -202,6 +198,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
           return;
         }
+
+        await _firestore.collection('users').doc(currentUser.uid).set({
+          'universityId': event.id,
+          'email': event.email,
+          'name': event.name,
+          'role': event.role.name,
+        }, SetOptions(merge: true));
 
         await _updateUserDevices(currentUser.uid);
 

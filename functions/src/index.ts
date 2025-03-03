@@ -95,3 +95,116 @@ exports.sendSampleNotification = onDocumentCreated('users/{userId}/devices/{devi
 
   await sendNotificationToUserDevices(userId, 'Sample Notification', 'This is a sample notification');
 });
+
+interface DeviceInfo {
+  deviceId: string;
+  fcmToken: string;
+  deviceInfo: {
+    androidVersion: string;
+    brand: string;
+    manufacturer: string;
+    model: string;
+  };
+}
+
+// Helper function to send notification to a specific device
+async function sendNotification(token: string, title: string, body: string) {
+  try {
+    await admin.messaging().send({
+      token,
+      notification: {
+        title,
+        body,
+      },
+      android: {
+        priority: 'high',
+      },
+    });
+  } catch (error) {
+    console.error('Error sending notification to token:', error);
+  }
+}
+
+// Helper function to get all device tokens for a user
+async function getUserDeviceTokens(userId: string): Promise<string[]> {
+  const userDoc = await admin.firestore()
+    .collection('users')
+    .doc(userId)
+    .get();
+
+  const userData = userDoc.data();
+  if (!userData || !userData.devices) return [];
+
+  const devices = userData.devices as DeviceInfo[];
+  return devices
+    .map(device => device.fcmToken)
+    .filter(token => token !== undefined && token !== null);
+}
+
+// Send notification when announcement is created
+exports.sendAnnouncementNotification = onDocumentCreated('announcements/{announcementId}', async (event) => {
+  try {
+    const announcement = event.data?.data();
+    if (!announcement) {
+      console.log('No announcement data found');
+      return;
+    }
+
+    // Get the course details
+    const courseDoc = await admin.firestore()
+      .collection('courses')
+      .doc(announcement.courseId)
+      .get();
+    
+    const courseData = courseDoc.data();
+    if (!courseData) {
+      console.log('No course data found for:', announcement.courseId);
+      return;
+    }
+
+    // Get all students from class_students collection
+    const classStudentsSnapshot = await admin.firestore()
+      .collection('class_students')
+      .where('courseId', '==', announcement.courseId)
+      .where('semesterId', '==', announcement.semesterId)
+      .get();
+
+    // Get all student IDs
+    const studentIds = classStudentsSnapshot.docs.map(doc => doc.data().studentId);
+
+    if (studentIds.length === 0) {
+      console.log('No students found for course:', announcement.courseId);
+      return;
+    }
+
+    // Prepare notification content
+    const title = `New Announcement: ${courseData.code}`;
+    const body = announcement.title;
+
+    // Process students in batches of 500 to avoid memory issues
+    const batchSize = 500;
+    for (let i = 0; i < studentIds.length; i += batchSize) {
+      const batch = studentIds.slice(i, i + batchSize);
+      
+      // Get all device tokens for each student in the batch and send notifications
+      const batchPromises = batch.map(async (studentId) => {
+        try {
+          const tokens = await getUserDeviceTokens(studentId);
+          return tokens.map(token => sendNotification(token, title, body));
+        } catch (error) {
+          console.error(`Error getting devices for student ${studentId}:`, error);
+          return [];
+        }
+      });
+
+      // Wait for all notifications in this batch to complete
+      await Promise.all((await Promise.all(batchPromises)).flat());
+      console.log(`Processed batch of ${batch.length} students`);
+    }
+    
+    console.log(`Successfully sent notifications for announcement ${event.params.announcementId} to ${studentIds.length} students`);
+
+  } catch (error) {
+    console.error('Error sending announcement notification:', error);
+  }
+});
