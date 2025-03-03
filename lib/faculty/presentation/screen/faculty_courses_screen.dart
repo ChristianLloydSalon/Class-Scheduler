@@ -207,14 +207,4 @@ class FacultyCoursesScreen extends HookWidget {
       ),
     );
   }
-
-  String _formatTime(Map<String, dynamic> time) {
-    final hour = time['hour'] as int?;
-    final minute = time['minute'] as int?;
-    if (hour == null || minute == null) return '';
-
-    final hourStr = hour.toString().padLeft(2, '0');
-    final minuteStr = minute.toString().padLeft(2, '0');
-    return '$hourStr:$minuteStr';
-  }
 }
