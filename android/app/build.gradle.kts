@@ -21,11 +21,14 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        // Flag to enable support for the new language APIs
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions { jvmTarget = JavaVersion.VERSION_11.toString() }
+
+    kotlinOptions { jvmTarget = "1.8" }
 
     defaultConfig {
         // TODO: Specify your own unique Application ID
@@ -55,6 +58,11 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    implementation("androidx.multidex:multidex:2.0.1")
 }
 
 flutter { source = "../.." }

@@ -8,11 +8,15 @@ import 'package:scheduler/auth/service/device_service.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
 import 'package:scheduler/config/app_router.dart';
 import 'package:toastification/toastification.dart';
-import 'firebase_options.dart';
+import 'common/service/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
+
+  // Initialize notification service
+  await NotificationService().initialize();
+
   runApp(const MyApp());
 }
 

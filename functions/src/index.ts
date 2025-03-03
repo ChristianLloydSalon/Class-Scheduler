@@ -11,7 +11,6 @@ import * as admin from "firebase-admin";
 // import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { setGlobalOptions } from "firebase-functions/v2";
-import { sendNotificationToUserDevices } from "./notification";
 
 // Initialize Firebase Admin
 admin.initializeApp();
