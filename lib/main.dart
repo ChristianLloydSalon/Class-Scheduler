@@ -15,7 +15,12 @@ void main() async {
   await Firebase.initializeApp();
 
   // Initialize notification service
-  await NotificationService().initialize();
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Check permissions
+  final hasPermission = await notificationService.checkPermissions();
+  debugPrint('Has notification permission: $hasPermission');
 
   runApp(const MyApp());
 }

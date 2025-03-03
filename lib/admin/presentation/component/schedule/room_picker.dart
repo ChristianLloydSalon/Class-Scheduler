@@ -94,7 +94,7 @@ class RoomPicker extends StatelessWidget {
                                             .textSecondary,
                                   ),
                                   const SizedBox(height: 4),
-                                  Row(
+                                  Wrap(
                                     children: [
                                       Icon(
                                         Icons.chair,

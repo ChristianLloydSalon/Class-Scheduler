@@ -7,13 +7,18 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import * as admin from "firebase-admin";
 // import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
-import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { onDocumentCreated, onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { setGlobalOptions } from "firebase-functions/v2";
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
 
 // Initialize Firebase Admin
-admin.initializeApp();
+initializeApp();
+
+const db = getFirestore();
+const messaging = getMessaging();
 
 // Set global options
 setGlobalOptions({
@@ -102,7 +107,10 @@ interface DeviceInfo {
 // Helper function to send notification to a specific device
 async function sendNotification(token: string, title: string, body: string) {
   try {
-    await admin.messaging().send({
+    console.log(`Attempting to send notification to token: ${token.substring(0, 6)}...`);
+    console.log(`Notification content - Title: ${title}, Body: ${body}`);
+    
+    await messaging.send({
       token,
       notification: {
         title,
@@ -112,25 +120,42 @@ async function sendNotification(token: string, title: string, body: string) {
         priority: 'high',
       },
     });
+    
+    console.log(`Successfully sent notification to token: ${token.substring(0, 6)}...`);
+    return true;
   } catch (error) {
-    console.error('Error sending notification to token:', error);
+    console.error(`Error sending notification to token: ${token.substring(0, 6)}...`, error);
+    return false;
   }
 }
 
 // Helper function to get all device tokens for a user
 async function getUserDeviceTokens(userId: string): Promise<string[]> {
-  const userDoc = await admin.firestore()
+  console.log(`Fetching device tokens for user: ${userId}`);
+  
+  const userDoc = await db
     .collection('users')
     .doc(userId)
     .get();
 
   const userData = userDoc.data();
-  if (!userData || !userData.devices) return [];
+  if (!userData) {
+    console.log(`No user data found for ID: ${userId}`);
+    return [];
+  }
+  
+  if (!userData.devices) {
+    console.log(`No devices found for user: ${userId}`);
+    return [];
+  }
 
   const devices = userData.devices as DeviceInfo[];
-  return devices
+  const tokens = devices
     .map(device => device.fcmToken)
     .filter(token => token !== undefined && token !== null);
+    
+  console.log(`Found ${tokens.length} valid tokens for user: ${userId}`);
+  return tokens;
 }
 
 // Send notification when announcement is created
@@ -143,7 +168,7 @@ exports.sendAnnouncementNotification = onDocumentCreated('announcements/{announc
     }
 
     // Get the course details
-    const courseDoc = await admin.firestore()
+    const courseDoc = await db
       .collection('courses')
       .doc(announcement.courseId)
       .get();
@@ -155,7 +180,7 @@ exports.sendAnnouncementNotification = onDocumentCreated('announcements/{announc
     }
 
     // Get all students from class_students collection
-    const classStudentsSnapshot = await admin.firestore()
+    const classStudentsSnapshot = await db
       .collection('class_students')
       .where('courseId', '==', announcement.courseId)
       .where('semesterId', '==', announcement.semesterId)
@@ -211,7 +236,7 @@ exports.sendExamScheduleNotification = onDocumentCreated('exam_schedules/{examId
     }
 
     // Get the course details
-    const courseDoc = await admin.firestore()
+    const courseDoc = await db
       .collection('courses')
       .doc(examSchedule.courseId)
       .get();
@@ -223,7 +248,7 @@ exports.sendExamScheduleNotification = onDocumentCreated('exam_schedules/{examId
     }
 
     // Get all students from class_students collection
-    const classStudentsSnapshot = await admin.firestore()
+    const classStudentsSnapshot = await db
       .collection('class_students')
       .where('courseId', '==', examSchedule.courseId)
       .where('semesterId', '==', examSchedule.semesterId)
@@ -283,3 +308,139 @@ exports.sendExamScheduleNotification = onDocumentCreated('exam_schedules/{examId
     console.error('Error sending exam schedule notification:', error);
   }
 });
+
+// This function triggers when a new schedule is created
+export const checkScheduleNotifications = onDocumentCreated(
+    'schedules/{scheduleId}',
+    async (event) => {
+        const data = event.data?.data();
+        if (!data) return;
+
+        const startTime = data.startTime;
+        const notifyBefore = data.notifyBefore || 15; // minutes
+
+        // Calculate next notification time
+        const nextNotificationTime = new Date();
+        nextNotificationTime.setHours(startTime.hour);
+        nextNotificationTime.setMinutes(startTime.minute - notifyBefore);
+
+        // Store notification schedule
+        await db.collection('schedule_notifications').add({
+            scheduleId: event.data?.id,
+            nextNotification: Timestamp.fromDate(nextNotificationTime),
+            courseId: data.courseId,
+            semesterId: data.semesterId,
+            subjectData: data.subjectData,
+            roomData: data.roomData,
+            day: data.day,
+            startTime: data.startTime
+        });
+    }
+);
+
+// This function processes pending notifications
+export const processScheduleNotifications = onDocumentWritten(
+    'schedule_notifications/{notificationId}',
+    async (event) => {
+        console.log(`Processing notification document: ${event.params.notificationId}`);
+        
+        const data = event.data?.after?.data();
+        if (!data) {
+            console.log('No data found in notification document');
+            return;
+        }
+
+        const now = Timestamp.now();
+        console.log(`Current time: ${now.toDate()}`);
+        console.log(`Next notification time: ${data.nextNotification.toDate()}`);
+
+        // Check if it's time to send notification
+        if (data.nextNotification.toDate() <= now.toDate()) {
+            try {
+                console.log(`Starting notification process for course: ${data.courseId}`);
+                
+                // Get students in this class
+                const students = await db
+                    .collection('class_students')
+                    .where('courseId', '==', data.courseId)
+                    .where('semesterId', '==', data.semesterId)
+                    .get();
+
+                // Get all student IDs
+                const studentIds = students.docs.map(doc => doc.data().studentId);
+                console.log(`Found ${studentIds.length} students in the class`);
+
+                if (studentIds.length === 0) {
+                    console.log('No students found for course:', data.courseId);
+                    return;
+                }
+
+                // Format time for display
+                const timeString = `${data.startTime.hour.toString().padStart(2, '0')}:${data.startTime.minute.toString().padStart(2, '0')}`;
+                console.log(`Formatted time string: ${timeString}`);
+
+                let successfulNotifications = 0;
+                let failedNotifications = 0;
+
+                // Process students in batches
+                const batchSize = 500;
+                for (let i = 0; i < studentIds.length; i += batchSize) {
+                    const batch = studentIds.slice(i, i + batchSize);
+                    console.log(`Processing batch ${Math.floor(i/batchSize) + 1} with ${batch.length} students`);
+                    
+                    const batchPromises = batch.map(async (studentId) => {
+                        try {
+                            const tokens = await getUserDeviceTokens(studentId);
+                            const results = await Promise.all(
+                                tokens.map(token => 
+                                    sendNotification(
+                                        token,
+                                        `Upcoming Class: ${data.subjectData.title}`,
+                                        `Your class starts at ${timeString} in Room ${data.roomData.name}`
+                                    )
+                                )
+                            );
+                            
+                            const successful = results.filter(result => result).length;
+                            const failed = results.length - successful;
+                            
+                            successfulNotifications += successful;
+                            failedNotifications += failed;
+                            
+                            return results;
+                        } catch (error) {
+                            console.error(`Error processing student ${studentId}:`, error);
+                            failedNotifications += 1;
+                            return [];
+                        }
+                    });
+
+                    await Promise.all(batchPromises);
+                    console.log(`Completed batch ${Math.floor(i/batchSize) + 1}`);
+                }
+
+                // Calculate next notification time (for next week)
+                const nextWeek = new Date(data.nextNotification.toDate());
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                console.log(`Setting next notification time to: ${nextWeek}`);
+
+                // Update next notification time
+                await event.data?.after?.ref.update({
+                    nextNotification: Timestamp.fromDate(nextWeek)
+                });
+
+                console.log(`Notification summary:
+                - Total students: ${studentIds.length}
+                - Successful notifications: ${successfulNotifications}
+                - Failed notifications: ${failedNotifications}
+                - Next notification scheduled for: ${nextWeek}`);
+
+            } catch (error) {
+                console.error('Error processing notification:', error);
+                throw error;
+            }
+        } else {
+            console.log('Not yet time to send notification');
+        }
+    }
+);

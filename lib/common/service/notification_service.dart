@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -15,50 +16,81 @@ class NotificationService {
   static const String _defaultChannelId = 'default_channel';
 
   Future<void> initialize() async {
-    // Request permission
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-    );
+    debugPrint('🚀 Initializing NotificationService');
 
-    // Initialize local notifications
-    const androidSettings = AndroidInitializationSettings(
-      '@drawable/ic_notification',
-    );
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+    try {
+      // Request permission
+      final settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
 
-    await _localNotifications.initialize(
-      const InitializationSettings(android: androidSettings, iOS: iosSettings),
-      onDidReceiveNotificationResponse: _handleNotificationResponse,
-    );
+      debugPrint('📱 Permission status: ${settings.authorizationStatus}');
 
-    // Create notification channels
-    await _createNotificationChannels();
+      // Set foreground notification presentation options
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      debugPrint('✅ Foreground notification options set');
 
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen((message) {
-      debugPrint('Got a message whilst in the foreground!');
-      debugPrint('Message data: ${message.data}');
-
-      if (message.notification != null) {
-        debugPrint(
-          'Message also contained a notification: ${message.notification}',
-        );
-        _showForegroundNotification(message);
+      // Get initial token
+      final token = await getToken();
+      if (token != null) {
+        debugPrint('✅ Initial FCM token obtained');
       }
-    });
 
-    // Handle notification tap when app is in background
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+      // Initialize local notifications
+      const androidSettings = AndroidInitializationSettings(
+        '@drawable/ic_notification',
+      );
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+
+      await _localNotifications.initialize(
+        const InitializationSettings(
+          android: androidSettings,
+          iOS: iosSettings,
+        ),
+        onDidReceiveNotificationResponse: _handleNotificationResponse,
+      );
+
+      // Create notification channels
+      await _createNotificationChannels();
+
+      // Handle background messages
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+
+      // Handle foreground messages
+      FirebaseMessaging.onMessage.listen((message) {
+        debugPrint('Got a message whilst in the foreground!');
+        debugPrint('Message data: ${message.data}');
+        debugPrint(
+          'Message notification title: ${message.notification?.title}',
+        );
+        debugPrint('Message notification body: ${message.notification?.body}');
+
+        if (message.notification != null) {
+          _showForegroundNotification(message);
+        }
+      });
+
+      // Handle notification tap when app is in background
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+      debugPrint('✅ NotificationService initialized successfully');
+    } catch (e) {
+      debugPrint('❌ Error initializing NotificationService: $e');
+    }
   }
 
   Future<void> _createNotificationChannels() async {
@@ -99,54 +131,74 @@ class NotificationService {
     final android = message.notification?.android;
     final apple = message.notification?.apple;
 
-    if (notification == null) return;
+    if (notification == null) {
+      debugPrint('❌ No notification in message');
+      return;
+    }
 
-    // For Android
-    final androidDetails =
-        android != null
-            ? AndroidNotificationDetails(
-              _highImportanceChannelId,
-              'High Importance Notifications',
-              channelDescription:
-                  'This channel is used for important notifications.',
-              importance: Importance.high,
-              priority: Priority.high,
-              icon: '@drawable/ic_notification',
-              enableVibration: true,
-              enableLights: true,
-              playSound: true,
-              styleInformation:
-                  android.imageUrl != null
-                      ? BigPictureStyleInformation(
-                        FilePathAndroidBitmap(android.imageUrl!),
-                        hideExpandedLargeIcon: true,
-                      )
-                      : null,
-            )
-            : null;
+    debugPrint('📬 Showing notification:');
+    debugPrint('- Title: ${notification.title}');
+    debugPrint('- Body: ${notification.body}');
+    debugPrint('- Data: ${message.data}');
 
-    // For iOS
-    final iosDetails =
-        apple != null
-            ? const DarwinNotificationDetails(
-              presentAlert: true,
-              presentBadge: true,
-              presentSound: true,
-            )
-            : null;
+    try {
+      // For Android
+      final androidDetails =
+          android != null
+              ? AndroidNotificationDetails(
+                _highImportanceChannelId,
+                'High Importance Notifications',
+                channelDescription:
+                    'This channel is used for important notifications.',
+                importance: Importance.high,
+                priority: Priority.high,
+                icon: '@drawable/ic_notification',
+                enableVibration: true,
+                enableLights: true,
+                playSound: true,
+                channelShowBadge: true,
+                styleInformation:
+                    android.imageUrl != null
+                        ? BigPictureStyleInformation(
+                          FilePathAndroidBitmap(android.imageUrl!),
+                          hideExpandedLargeIcon: true,
+                        )
+                        : null,
+              )
+              : null;
 
-    final details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
+      debugPrint('📱 Android notification details configured');
 
-    await _localNotifications.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      details,
-      payload: message.data.toString(),
-    );
+      // For iOS
+      final iosDetails =
+          apple != null
+              ? const DarwinNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+                interruptionLevel: InterruptionLevel.active,
+              )
+              : null;
+
+      debugPrint('📱 iOS notification details configured');
+
+      final details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _localNotifications.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        details,
+        payload: message.data.toString(),
+      );
+
+      debugPrint('✅ Notification shown successfully');
+    } catch (e) {
+      debugPrint('❌ Error showing notification: $e');
+    }
   }
 
   void _handleNotificationResponse(NotificationResponse response) {
@@ -167,7 +219,21 @@ class NotificationService {
   }
 
   Future<String?> getToken() async {
-    return await _messaging.getToken();
+    try {
+      final token = await _messaging.getToken();
+      if (token != null) {
+        debugPrint('✅ FCM Token obtained successfully');
+        debugPrint(
+          'Token: ${token.substring(0, 6)}...${token.substring(token.length - 6)}',
+        );
+      } else {
+        debugPrint('❌ Failed to get FCM token');
+      }
+      return token;
+    } catch (e) {
+      debugPrint('❌ Error getting FCM token: $e');
+      return null;
+    }
   }
 
   Future<void> subscribeToTopic(String topic) async {
@@ -177,15 +243,45 @@ class NotificationService {
   Future<void> unsubscribeFromTopic(String topic) async {
     await _messaging.unsubscribeFromTopic(topic);
   }
+
+  Future<bool> checkPermissions() async {
+    final settings = await _messaging.getNotificationSettings();
+    debugPrint('Current permission status: ${settings.authorizationStatus}');
+    return settings.authorizationStatus == AuthorizationStatus.authorized;
+  }
+
+  // Add this method to NotificationService
+  Future<void> testNotification() async {
+    await _localNotifications.show(
+      0,
+      'Test Notification',
+      'This is a test notification',
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _highImportanceChannelId,
+          'High Importance Notifications',
+          channelDescription:
+              'This channel is used for important notifications.',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+    );
+  }
 }
 
 // Handle background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('Handling a background message: ${message.messageId}');
-  // Initialize Firebase if needed (for background messages)
-  // await Firebase.initializeApp();
 
-  // You can also show a notification here if needed
+  // Initialize Firebase for background messages
+  await Firebase.initializeApp();
+
+  debugPrint('Firebase initialized in background');
+  debugPrint('Message data: ${message.data}');
+  debugPrint('Message notification: ${message.notification?.title}');
+
+  // Show the notification
   await NotificationService()._showForegroundNotification(message);
 }
