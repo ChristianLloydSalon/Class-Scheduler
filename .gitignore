@@ -52,4 +52,4 @@ app.*.map.json
 .env
 
 # Generated files
-lib/config/app_config.dart
+lib/common/config/app_config.dart
