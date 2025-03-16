@@ -50,6 +50,7 @@ class _StudentScreenState extends State<StudentScreen> {
         body: FirestoreListView<Map<String, dynamic>>(
           query: FirebaseFirestore.instance
               .collection('semesters')
+              .where('status', isNotEqualTo: 'archived')
               .orderBy('year', descending: true)
               .orderBy('semester'),
           padding: const EdgeInsets.symmetric(vertical: 8),
