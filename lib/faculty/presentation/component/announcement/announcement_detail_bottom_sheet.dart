@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scheduler/common/theme/app_theme.dart';
 
 class AnnouncementDetailBottomSheet extends StatelessWidget {
   final String announcementId;
@@ -108,9 +109,14 @@ class AnnouncementDetailBottomSheet extends StatelessWidget {
   }
 
   Color _getCategoryColor(String category) {
+    final themeData = ThemeData();
+    final colorScheme = themeData.colorScheme.copyWith(
+      primary: const Color(0xFF4F6D7A), // Our muted blue-gray
+    );
+
     switch (category.toLowerCase()) {
       case 'assignments':
-        return Colors.blue.shade100;
+        return colorScheme.primary.withOpacity(0.1);
       case 'exams':
         return Colors.red.shade100;
       case 'general':
@@ -121,9 +127,14 @@ class AnnouncementDetailBottomSheet extends StatelessWidget {
   }
 
   Color _getCategoryTextColor(String category) {
+    final themeData = ThemeData();
+    final colorScheme = themeData.colorScheme.copyWith(
+      primary: const Color(0xFF4F6D7A), // Our muted blue-gray
+    );
+
     switch (category.toLowerCase()) {
       case 'assignments':
-        return Colors.blue.shade900;
+        return colorScheme.primary;
       case 'exams':
         return Colors.red.shade900;
       case 'general':

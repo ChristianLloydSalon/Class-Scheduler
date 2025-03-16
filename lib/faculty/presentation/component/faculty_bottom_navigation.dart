@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scheduler/common/theme/app_theme.dart';
 
 class FacultyBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -12,7 +13,7 @@ class FacultyBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
@@ -28,21 +29,28 @@ class FacultyBottomNavigation extends StatelessWidget {
         selectedIndex: currentIndex,
         onDestinationSelected: onTap,
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        backgroundColor: theme.colorScheme.surface,
-        destinations: const [
+        backgroundColor: Colors.white,
+        indicatorColor: colorScheme.primary.withOpacity(0.2),
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
+            icon: Icon(
+              Icons.calendar_today_outlined,
+              color: colorScheme.primary,
+            ),
+            selectedIcon: Icon(
+              Icons.calendar_today,
+              color: colorScheme.primary,
+            ),
             label: 'Schedule',
           ),
           NavigationDestination(
-            icon: Icon(Icons.event_note_outlined),
-            selectedIcon: Icon(Icons.event_note),
+            icon: Icon(Icons.event_note_outlined, color: colorScheme.primary),
+            selectedIcon: Icon(Icons.event_note, color: colorScheme.primary),
             label: 'Exams',
           ),
           NavigationDestination(
-            icon: Icon(Icons.announcement_outlined),
-            selectedIcon: Icon(Icons.announcement),
+            icon: Icon(Icons.announcement_outlined, color: colorScheme.primary),
+            selectedIcon: Icon(Icons.announcement, color: colorScheme.primary),
             label: 'Announcements',
           ),
         ],

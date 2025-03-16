@@ -20,15 +20,15 @@ class AppColors extends ThemeExtension<AppColors> {
   });
 
   /// Primary brand color, used for main CTAs, links
-  /// #006FFD
+  /// Previously #006FFD, now a lighter blue
   final Color primary;
 
   /// Secondary brand color
-  /// #007AFF
+  /// Previously #007AFF, now a complementary blue
   final Color secondary;
 
   /// Accent color for highlights, badges
-  /// #E97C00
+  /// Previously #E97C00, now a complementary color to the blue theme
   final Color accent;
 
   /// Primary text color for headings and body
@@ -76,9 +76,9 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color warning;
 
   static final light = AppColors(
-    primary: const Color(0xFF006FFD),
-    secondary: const Color(0xFF007AFF),
-    accent: const Color(0xFFE97C00),
+    primary: const Color(0xFF4F6D7A), // Updated to muted blue-gray #4F6D7A
+    secondary: const Color(0xFF90CAF9), // Light Blue 200
+    accent: const Color(0xFF4FC3F7), // Light Blue Accent 200
     textPrimary: const Color(0xFF000000),
     textSecondary: const Color(0xFF71727A),
     textHint: const Color(0xFF8F9098),

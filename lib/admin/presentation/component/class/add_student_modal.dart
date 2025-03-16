@@ -54,7 +54,7 @@ class AddStudentModal extends HookWidget {
                       isIrregular.value
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
-                      color: Colors.blue,
+                      color: context.colors.primary,
                     ),
                     const SizedBox(width: 8),
                     Text(

@@ -191,10 +191,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (currentUser != null) {
         final userDoc =
-            await _firestore.collection('users').doc(event.id).get();
-        if (userDoc.exists) {
+            await _firestore
+                .collection('user_records')
+                .where('universityId', isEqualTo: event.id)
+                .get();
+        if (userDoc.docs.isNotEmpty) {
           emit(
-            AuthState(errorMessage: 'User with universityId already exists'),
+            AuthState(errorMessage: 'User with id ${event.id} already exists'),
           );
           return;
         }

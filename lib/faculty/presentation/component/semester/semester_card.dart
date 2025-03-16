@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scheduler/common/theme/app_theme.dart';
 
 class SemesterCard extends StatelessWidget {
   final Map<String, dynamic> semester;
@@ -9,13 +10,14 @@ class SemesterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     Color getStatusColor() {
       switch ((semester['status'] as String?)?.toLowerCase()) {
         case 'active':
           return Colors.green;
         case 'upcoming':
-          return Colors.blue;
+          return colorScheme.primary;
         case 'completed':
           return Colors.grey;
         default:

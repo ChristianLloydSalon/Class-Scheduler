@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scheduler/common/theme/app_theme.dart';
 
 class AdminBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -12,22 +13,25 @@ class AdminBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return NavigationBar(
       height: 65,
       elevation: 0,
       backgroundColor: Colors.white,
+      indicatorColor: colorScheme.primary.withOpacity(0.2),
       selectedIndex: currentIndex,
       onDestinationSelected: onTap,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      destinations: const [
+      destinations: [
         NavigationDestination(
-          icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(Icons.calendar_month),
+          icon: Icon(Icons.calendar_month_outlined, color: colorScheme.primary),
+          selectedIcon: Icon(Icons.calendar_month, color: colorScheme.primary),
           label: 'Schedule',
         ),
         NavigationDestination(
-          icon: Icon(Icons.school_outlined),
-          selectedIcon: Icon(Icons.school),
+          icon: Icon(Icons.school_outlined, color: colorScheme.primary),
+          selectedIcon: Icon(Icons.school, color: colorScheme.primary),
           label: 'Academic',
         ),
       ],

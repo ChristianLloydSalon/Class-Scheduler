@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/auth/service/device_service.dart';
+import 'package:scheduler/common/theme/app_colors.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
 import 'package:scheduler/config/app_router.dart';
 import 'package:toastification/toastification.dart';
@@ -45,7 +46,32 @@ class MyApp extends StatelessWidget {
         ],
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(scaffoldBackgroundColor: context.colors.background),
+          theme: ThemeData(
+            scaffoldBackgroundColor: Colors.white,
+            colorScheme: ColorScheme.light(
+              primary: AppColors.light.primary,
+              onPrimary: Colors.white,
+              secondary: AppColors.light.secondary,
+              onSecondary: Colors.white,
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: AppColors.light.primary,
+              foregroundColor: Colors.white,
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.light.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.light.primary,
+              ),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+            extensions: [AppColors.light],
+          ),
           routerConfig: AppRouter.router,
         ),
       ),

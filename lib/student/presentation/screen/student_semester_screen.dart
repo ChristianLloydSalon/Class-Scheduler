@@ -12,6 +12,8 @@ class StudentSemesterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       backgroundColor: context.colors.background,
       appBar: AppBar(
@@ -49,9 +51,9 @@ class StudentSemesterScreen extends StatelessWidget {
               child: TabBar(
                 labelStyle: context.textStyles.body1.regular,
                 unselectedLabelStyle: context.textStyles.body2.regular,
-                labelColor: context.colors.primary,
+                labelColor: colorScheme.primary,
                 unselectedLabelColor: context.colors.textSecondary,
-                indicatorColor: context.colors.primary,
+                indicatorColor: colorScheme.primary,
                 tabs: const [
                   Tab(text: 'Schedule'),
                   Tab(text: 'Exams'),
