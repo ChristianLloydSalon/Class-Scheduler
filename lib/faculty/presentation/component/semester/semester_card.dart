@@ -20,6 +20,8 @@ class SemesterCard extends StatelessWidget {
           return colorScheme.primary;
         case 'completed':
           return Colors.grey;
+        case 'archived':
+          return Colors.brown;
         default:
           return Colors.grey;
       }

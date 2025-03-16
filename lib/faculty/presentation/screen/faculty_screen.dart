@@ -22,7 +22,23 @@ class FacultyScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final scaffoldKey = useState(GlobalKey<ScaffoldState>());
-    final semestersQuery = FirebaseFirestore.instance.collection('semesters');
+
+    // Query that always filters out archived semesters
+    final semestersQuery = useMemoized(() {
+      Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(
+        'semesters',
+      );
+
+      // Always filter out archived semesters
+      query =
+          query.where('status', isNotEqualTo: 'archived')
+              as Query<Map<String, dynamic>>;
+
+      return query
+          .orderBy('status')
+          .orderBy('year', descending: true)
+          .orderBy('semester');
+    }, []);
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {

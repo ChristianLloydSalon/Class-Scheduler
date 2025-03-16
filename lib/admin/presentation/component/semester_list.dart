@@ -10,8 +10,17 @@ class SemesterList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final query = FirebaseFirestore.instance
-        .collection('semesters')
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(
+      'semesters',
+    );
+
+    // Always filter out archived semesters
+    query =
+        query.where('status', isNotEqualTo: 'archived')
+            as Query<Map<String, dynamic>>;
+
+    query = query
+        .orderBy('status')
         .orderBy('year', descending: true)
         .orderBy('semester');
 

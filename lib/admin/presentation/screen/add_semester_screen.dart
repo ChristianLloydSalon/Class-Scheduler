@@ -19,6 +19,9 @@ class AddSemesterScreen extends HookWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final yearController = useTextEditingController();
     final semesterController = useTextEditingController();
+    final statusValue = useState<String>('upcoming');
+
+    final statusOptions = ['active', 'upcoming', 'completed', 'archived'];
 
     Future<void> handleSubmit() async {
       if (!(formKey.currentState?.validate() ?? false)) return;
@@ -43,6 +46,7 @@ class AddSemesterScreen extends HookWidget {
         await FirebaseFirestore.instance.collection('semesters').add({
           'year': year,
           'semester': semester,
+          'status': statusValue.value,
         });
 
         if (context.mounted) {
@@ -129,6 +133,47 @@ class AddSemesterScreen extends HookWidget {
                           }
                           return null;
                         },
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Status',
+                        style: context.textStyles.body1.textPrimary,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: context.colors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: statusValue.value,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            elevation: 16,
+                            style: context.textStyles.body1.textPrimary,
+                            onChanged: (String? value) {
+                              if (value != null) {
+                                statusValue.value = value;
+                              }
+                            },
+                            items:
+                                statusOptions.map<DropdownMenuItem<String>>((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(
+                                      value.substring(0, 1).toUpperCase() +
+                                          value.substring(1),
+                                      style:
+                                          context.textStyles.body1.textPrimary,
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
                       ),
                     ],
                   ),
