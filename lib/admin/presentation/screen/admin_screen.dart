@@ -10,6 +10,7 @@ import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/common/component/communication/logout_modal.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
 import 'package:scheduler/login/presentation/screen/login_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AdminScreen extends HookWidget {
   const AdminScreen({super.key});
@@ -68,7 +69,13 @@ class AdminScreen extends HookWidget {
         drawer: AdminDrawer(
           onProfileTap: handleProfileTap,
           onLogoutTap: handleLogoutTap,
-          onWebsiteTap: () {},
+          onWebsiteTap: () async {
+            const websiteUrl = 'https://ismis.bisu.edu.ph/';
+
+            if (await canLaunchUrl(Uri.parse(websiteUrl))) {
+              await launchUrl(Uri.parse(websiteUrl));
+            }
+          },
         ),
         body: SafeArea(
           child: AdminScreensProvider(selectedIndex: selectedIndex.value),

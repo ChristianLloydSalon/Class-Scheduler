@@ -139,18 +139,10 @@ class FacultyDrawer extends StatelessWidget {
                       color: context.colors.textSecondary,
                     ),
                     onTap: () async {
-                      try {
-                        Navigator.pop(context);
-                        final url = Uri.parse('https://www.example.com');
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(url);
-                        }
-                      } catch (error) {
-                        showToast(
-                          'Error',
-                          'Could not open website',
-                          ToastificationType.error,
-                        );
+                      const websiteUrl = 'https://ismis.bisu.edu.ph/';
+
+                      if (await canLaunchUrl(Uri.parse(websiteUrl))) {
+                        await launchUrl(Uri.parse(websiteUrl));
                       }
                     },
                   ),
