@@ -20,66 +20,156 @@ class StudentAnnouncementsTab extends StatelessWidget {
         .where('studentId', isEqualTo: userId)
         .where('semesterId', isEqualTo: semesterId);
 
-    return FirestoreListView<Map<String, dynamic>>(
-      query: enrollmentsQuery,
-      emptyBuilder:
-          (context) => Center(
+    return StreamBuilder<QuerySnapshot>(
+      stream: enrollmentsQuery.snapshots(),
+      builder: (context, enrollmentsSnapshot) {
+        if (enrollmentsSnapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(color: context.colors.primary),
+          );
+        }
+
+        if (enrollmentsSnapshot.hasError) {
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.campaign_outlined,
-                  size: 64,
-                  color: context.colors.primary.withOpacity(0.5),
+                  Icons.error_outline,
+                  size: 48,
+                  color: context.colors.error,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No announcements found',
-                  style: context.textStyles.subtitle1.textPrimary,
+                  'Error loading enrollments',
+                  style: context.textStyles.body1.error,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  enrollmentsSnapshot.error.toString(),
+                  style: context.textStyles.caption1.textSecondary,
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
-          ),
-      errorBuilder:
-          (context, error, _) => Center(
-            child: Text('Error: $error', style: context.textStyles.body1.error),
-          ),
-      loadingBuilder:
-          (context) => Center(
-            child: CircularProgressIndicator(color: context.colors.primary),
-          ),
-      itemBuilder: (context, enrollmentSnapshot) {
-        final enrollmentData = enrollmentSnapshot.data();
-        final courseId = enrollmentData['courseId'] as String;
+          );
+        }
 
+        final enrollments = enrollmentsSnapshot.data?.docs ?? [];
+
+        if (enrollments.isEmpty) {
+          return _buildEmptyState(
+            context,
+            'No courses found',
+            'You are not enrolled in any courses for this semester',
+          );
+        }
+
+        // Get list of course IDs
+        final courseIds =
+            enrollments
+                .map((doc) => doc.data() as Map<String, dynamic>)
+                .map((data) => data['courseId'] as String)
+                .toList();
+
+        // Query announcements for all enrolled courses
         return StreamBuilder<QuerySnapshot>(
           stream:
               FirebaseFirestore.instance
                   .collection('announcements')
-                  .where('courseId', isEqualTo: courseId)
+                  .where('courseId', whereIn: courseIds)
                   .where('semesterId', isEqualTo: semesterId)
                   .orderBy('createdAt', descending: true)
                   .snapshots(),
-          builder: (context, announcementSnapshot) {
-            if (!announcementSnapshot.hasData) {
-              return const SizedBox.shrink();
+          builder: (context, announcementsSnapshot) {
+            if (announcementsSnapshot.connectionState ==
+                ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(color: context.colors.primary),
+              );
             }
 
-            final announcements = announcementSnapshot.data?.docs ?? [];
+            if (announcementsSnapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: context.colors.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading announcements',
+                      style: context.textStyles.body1.error,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      announcementsSnapshot.error.toString(),
+                      style: context.textStyles.caption1.textSecondary,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final announcements = announcementsSnapshot.data?.docs ?? [];
+
             if (announcements.isEmpty) {
-              return const SizedBox.shrink();
+              return _buildEmptyState(
+                context,
+                'No announcements',
+                'There are no announcements for your enrolled courses',
+              );
             }
 
-            return Column(
-              children:
-                  announcements.map((announcement) {
-                    final data = announcement.data() as Map<String, dynamic>;
-                    return AnnouncementCard(announcement: data);
-                  }).toList(),
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: announcements.length,
+              itemBuilder: (context, index) {
+                final announcementData =
+                    announcements[index].data() as Map<String, dynamic>;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: AnnouncementCard(announcement: announcementData),
+                );
+              },
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, String title, String subtitle) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.campaign_outlined,
+              size: 72,
+              color: context.colors.primary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: context.textStyles.heading3.textPrimary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              subtitle,
+              style: context.textStyles.body2.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -45,7 +45,7 @@ class AddDepartmentScreen extends HookWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'New Semester',
+          'New Department',
           style: context.textStyles.heading2.textPrimary,
         ),
         elevation: 0,
@@ -64,7 +64,7 @@ class AddDepartmentScreen extends HookWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Enter year and semester number',
+                        'Enter department name',
                         style: context.textStyles.body2.textSecondary,
                       ),
                       const SizedBox(height: 24),

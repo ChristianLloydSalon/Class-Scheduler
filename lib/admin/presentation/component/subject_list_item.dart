@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
+import 'package:scheduler/admin/presentation/screen/edit_subject_screen.dart';
 
 class SubjectListItem extends StatelessWidget {
   final QueryDocumentSnapshot subject;
@@ -76,10 +77,20 @@ class SubjectListItem extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: context.colors.textHint.withValues(alpha: 0.5),
+              IconButton(
+                icon: Icon(Icons.edit, size: 20, color: context.colors.primary),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => EditSubjectScreen(
+                            subjectId: subject.id,
+                            subjectData: data,
+                          ),
+                    ),
+                  );
+                },
               ),
             ],
           ),

@@ -13,7 +13,6 @@ class StudentListScreen extends StatefulWidget {
 class _StudentListScreenState extends State<StudentListScreen> {
   final _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
-  String? _selectedYearFilter;
   String _searchQuery = '';
   final _searchController = TextEditingController();
 
@@ -110,40 +109,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     },
                   ),
                 ),
-
-                const SizedBox(width: 16),
-
-                // Filter dropdown
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      hint: const Text('Filter'),
-                      value: _selectedYearFilter,
-                      icon: const Icon(Icons.filter_list),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'all',
-                          child: Text('All Students'),
-                        ),
-                        DropdownMenuItem(value: 'year1', child: Text('Year 1')),
-                        DropdownMenuItem(value: 'year2', child: Text('Year 2')),
-                        DropdownMenuItem(value: 'year3', child: Text('Year 3')),
-                        DropdownMenuItem(value: 'year4', child: Text('Year 4')),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedYearFilter = value;
-                        });
-                        // TODO: Implement filter functionality
-                      },
-                    ),
-                  ),
-                ),
               ],
             ),
 
@@ -225,12 +190,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
                             child: Icon(Icons.person, color: primaryColor),
                           ),
                           title: Text('University ID: $studentId'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.more_vert),
-                            onPressed: () {
-                              // TODO: Implement student options menu
-                            },
-                          ),
                         ),
                       );
                     },

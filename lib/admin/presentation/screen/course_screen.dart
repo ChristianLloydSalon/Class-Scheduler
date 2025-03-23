@@ -19,7 +19,12 @@ class CourseScreen extends HookWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Courses', style: context.textStyles.heading3.textPrimary),
+        title: Text(
+          'Courses',
+          style: context.textStyles.heading3.textPrimary.copyWith(
+            color: Colors.white,
+          ),
+        ),
       ),
       body: Container(
         padding: const EdgeInsets.all(16),

@@ -16,7 +16,9 @@ class DepartmentScreen extends HookWidget {
       appBar: AppBar(
         title: Text(
           'Department',
-          style: context.textStyles.heading3.textPrimary,
+          style: context.textStyles.heading3.textPrimary.copyWith(
+            color: Colors.white,
+          ),
         ),
       ),
       body: Container(

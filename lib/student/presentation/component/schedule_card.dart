@@ -26,6 +26,7 @@ class ScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final subjectData = schedule['subjectData'] as Map<String, dynamic>?;
     final roomData = schedule['roomData'] as Map<String, dynamic>?;
+    final teacherData = schedule['teacherData'] as Map<String, dynamic>?;
     final startTime = schedule['startTime'] as Map<String, dynamic>?;
     final endTime = schedule['endTime'] as Map<String, dynamic>?;
     final units = subjectData?['units'] as Map<String, dynamic>?;
@@ -165,6 +166,42 @@ class ScheduleCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (teacherData != null) ...[
+                const SizedBox(height: 12),
+                Divider(
+                  height: 1,
+                  color: context.colors.border.withOpacity(0.5),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.person_rounded,
+                      size: 16,
+                      color: context.colors.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Professor: ',
+                      style: context.textStyles.body2.textSecondary,
+                    ),
+                    Text(
+                      teacherData['name'] ?? 'Unknown',
+                      style: context.textStyles.body2.textPrimary,
+                    ),
+                  ],
+                ),
+                if (teacherData['email'] != null) ...[
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(
+                      teacherData['email'],
+                      style: context.textStyles.caption1.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
             ],
           ),
         ),

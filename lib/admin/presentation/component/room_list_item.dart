@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
+import 'package:scheduler/admin/presentation/screen/edit_room_screen.dart';
 
 class RoomListItem extends StatelessWidget {
   final QueryDocumentSnapshot room;
@@ -52,22 +53,59 @@ class RoomListItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      data['code'],
-                      style: context.textStyles.caption1.textSecondary,
+                    Row(
+                      children: [
+                        Text(
+                          data['code'] ?? '',
+                          style: context.textStyles.caption1.textSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                data['type'] == 'lab'
+                                    ? Colors.purple.withOpacity(0.1)
+                                    : Colors.teal.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            data['type'] == 'lab' ? 'Laboratory' : 'Room',
+                            style: context.textStyles.caption2.baseStyle
+                                .copyWith(
+                                  color:
+                                      data['type'] == 'lab'
+                                          ? Colors.purple
+                                          : Colors.teal,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${data['chairs']} chairs • ${_getFacilities(data)}',
+                      '${data['chairs'] ?? 0} chairs • ${_getFacilities(data)}',
                       style: context.textStyles.caption1.textSecondary,
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: context.colors.textHint.withOpacity(0.5),
+              IconButton(
+                icon: Icon(Icons.edit, size: 20, color: context.colors.primary),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              EditRoomScreen(roomId: room.id, roomData: data),
+                    ),
+                  );
+                },
               ),
             ],
           ),

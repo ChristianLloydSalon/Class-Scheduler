@@ -21,8 +21,8 @@ class _StudentScheduleTabState extends State<StudentScheduleTab> {
   @override
   void initState() {
     super.initState();
-    // Set initial day to current weekday
-    selectedDayIndex = (DateTime.now().weekday - 1) % 7;
+    // Always select Monday (index 0) by default
+    selectedDayIndex = 0;
   }
 
   @override
@@ -52,10 +52,12 @@ class _StudentScheduleTabState extends State<StudentScheduleTab> {
                   },
                   labelStyle:
                       isSelected
-                          ? context.textStyles.body2.primary
+                          ? context.textStyles.body2.textPrimary.copyWith(
+                            color: Colors.white,
+                          )
                           : context.textStyles.body2.textSecondary,
                   backgroundColor: context.colors.surface,
-                  selectedColor: context.colors.primary.withOpacity(0.1),
+                  selectedColor: context.colors.primary,
                   side: BorderSide(
                     color:
                         isSelected
@@ -180,6 +182,35 @@ class _StudentScheduleTabState extends State<StudentScheduleTab> {
                     ),
                 itemBuilder: (context, snapshot) {
                   final data = snapshot.data();
+
+                  // Fetch teacher data if teacherId exists
+                  if (data['teacherId'] != null) {
+                    return FutureBuilder<DocumentSnapshot>(
+                      future:
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(data['teacherId'])
+                              .get(),
+                      builder: (context, teacherSnapshot) {
+                        final Map<String, dynamic> scheduleWithTeacher = {
+                          ...data,
+                        };
+
+                        if (teacherSnapshot.hasData &&
+                            teacherSnapshot.data != null) {
+                          scheduleWithTeacher['teacherData'] =
+                              teacherSnapshot.data!.data()
+                                  as Map<String, dynamic>?;
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: ScheduleCard(schedule: scheduleWithTeacher),
+                        );
+                      },
+                    );
+                  }
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: ScheduleCard(schedule: data),

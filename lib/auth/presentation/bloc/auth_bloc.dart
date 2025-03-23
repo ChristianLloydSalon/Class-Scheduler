@@ -40,8 +40,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (currentUser != null) {
       final userDoc =
           await _firestore.collection('users').doc(currentUser.uid).get();
+
+      if (!userDoc.exists) {
+        return;
+      }
+
+      final userData = userDoc.data() ?? {};
+
+      final hasRecord =
+          await _firestore
+              .collection('user_records')
+              .where('universityId', isEqualTo: userData['universityId'] ?? '')
+              .where('role', isEqualTo: userData['role'] ?? '')
+              .get();
+
       final role =
-          userDoc.exists
+          hasRecord.docs.isNotEmpty || userData['role'] == UserRole.admin.name
               ? UserRole.values.firstWhere(
                 (e) => e.name == userDoc.data()?['role'],
                 orElse: () => UserRole.none,
@@ -60,13 +74,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (user != null) {
         final userDoc =
             await _firestore.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          return;
+        }
+
+        final userData = userDoc.data() ?? {};
+
+        final hasRecord =
+            await _firestore
+                .collection('user_records')
+                .where(
+                  'universityId',
+                  isEqualTo: userData['universityId'] ?? '',
+                )
+                .where('role', isEqualTo: userData['role'] ?? '')
+                .get();
+
+        print('hasRecord: ${hasRecord.docs.isNotEmpty}');
+
         final role =
-            userDoc.exists
+            hasRecord.docs.isNotEmpty || userData['role'] == UserRole.admin.name
                 ? UserRole.values.firstWhere(
                   (e) => e.name == userDoc.data()?['role'],
                   orElse: () => UserRole.none,
                 )
                 : UserRole.none;
+
+        print('role: ${role.name}');
 
         await _updateUserDevices(user.uid);
 
@@ -182,6 +217,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onSignUp(AuthSignUpEvent event, Emitter<AuthState> emit) async {
     try {
+      // First check if user record exists in user_records collection
+      final userRecordDoc =
+          await _firestore
+              .collection('user_records')
+              .where('universityId', isEqualTo: event.id)
+              .where('role', isEqualTo: event.role.name)
+              .get();
+
+      if (userRecordDoc.docs.isEmpty) {
+        emit(
+          AuthState(
+            errorMessage:
+                'No record found for ID ${event.id}. Please contact your administrator.',
+          ),
+        );
+
+        emit(const AuthState());
+        return;
+      }
+
+      // Check if user is already registered with this ID
+      final existingUser =
+          await _firestore
+              .collection('users')
+              .where('universityId', isEqualTo: event.id)
+              .get();
+
+      if (existingUser.docs.isNotEmpty) {
+        emit(
+          AuthState(errorMessage: 'User with ID ${event.id} already exists'),
+        );
+        return;
+      }
+
       await _auth.createUserWithEmailAndPassword(
         email: event.email,
         password: event.password,
@@ -190,18 +259,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final currentUser = _auth.currentUser;
 
       if (currentUser != null) {
-        final userDoc =
-            await _firestore
-                .collection('user_records')
-                .where('universityId', isEqualTo: event.id)
-                .get();
-        if (userDoc.docs.isNotEmpty) {
-          emit(
-            AuthState(errorMessage: 'User with id ${event.id} already exists'),
-          );
-          return;
-        }
-
         await _firestore.collection('users').doc(currentUser.uid).set({
           'universityId': event.id,
           'email': event.email,
@@ -226,6 +283,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
       }
     } catch (e) {
+      await _auth.currentUser?.delete();
       emit(AuthState(errorMessage: e.toString()));
 
       emit(const AuthState(errorMessage: ''));

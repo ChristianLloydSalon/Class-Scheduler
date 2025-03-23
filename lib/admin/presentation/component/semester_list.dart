@@ -5,8 +5,58 @@ import 'package:scheduler/common/component/communication/empty_display.dart';
 import 'package:scheduler/common/component/communication/error_display.dart';
 import 'semester_list_item.dart';
 
-class SemesterList extends StatelessWidget {
+class SemesterList extends StatefulWidget {
   const SemesterList({super.key});
+
+  @override
+  State<SemesterList> createState() => _SemesterListState();
+}
+
+class _SemesterListState extends State<SemesterList>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Active Semesters'),
+            Tab(text: 'Archived Semesters'),
+          ],
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: const [
+              _SemesterListView(isArchived: false),
+              _SemesterListView(isArchived: true),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SemesterListView extends StatelessWidget {
+  final bool isArchived;
+
+  const _SemesterListView({required this.isArchived});
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +64,16 @@ class SemesterList extends StatelessWidget {
       'semesters',
     );
 
-    // Always filter out archived semesters
-    query =
-        query.where('status', isNotEqualTo: 'archived')
-            as Query<Map<String, dynamic>>;
+    // Filter based on archived status
+    if (isArchived) {
+      query =
+          query.where('status', isEqualTo: 'archived')
+              as Query<Map<String, dynamic>>;
+    } else {
+      query =
+          query.where('status', isNotEqualTo: 'archived')
+              as Query<Map<String, dynamic>>;
+    }
 
     query = query
         .orderBy('status')
@@ -35,8 +91,11 @@ class SemesterList extends StatelessWidget {
           ),
       emptyBuilder:
           (context) => EmptyDisplay(
-            title: 'No Semesters Available',
-            subtitle: 'Please add a semester to get started',
+            title: isArchived ? 'No Archived Semesters' : 'No Active Semesters',
+            subtitle:
+                isArchived
+                    ? 'Archived semesters will appear here'
+                    : 'Please add a semester to get started',
           ),
       itemBuilder: (context, snapshot) {
         return Padding(
