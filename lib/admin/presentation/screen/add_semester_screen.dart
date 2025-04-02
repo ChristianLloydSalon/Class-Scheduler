@@ -18,17 +18,18 @@ class AddSemesterScreen extends HookWidget {
   Widget build(BuildContext context) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final yearController = useTextEditingController();
-    final semesterController = useTextEditingController();
+    final selectedSemester = useState<int>(1);
     final statusValue = useState<String>('upcoming');
 
     final statusOptions = ['active', 'upcoming', 'completed', 'archived'];
+    final semesterOptions = [1, 2];
 
     Future<void> handleSubmit() async {
       if (!(formKey.currentState?.validate() ?? false)) return;
 
       try {
         final year = int.parse(yearController.text);
-        final semester = int.parse(semesterController.text);
+        final semester = selectedSemester.value;
 
         // Check if semester already exists
         final existingDoc =
@@ -113,26 +114,44 @@ class AddSemesterScreen extends HookWidget {
                         },
                       ),
                       const SizedBox(height: 16),
-                      PrimaryTextField(
-                        controller: semesterController,
-                        labelText: 'Semester',
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Semester is required';
-                          }
-                          if (int.tryParse(value) == null) {
-                            return 'Please enter a valid semester number';
-                          }
-                          final semester = int.parse(value);
-                          if (semester < 1 || semester > 3) {
-                            return 'Semester must be between 1 and 3';
-                          }
-                          return null;
-                        },
+                      Text(
+                        'Semester',
+                        style: context.textStyles.body1.textPrimary,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: context.colors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            isExpanded: true,
+                            value: selectedSemester.value,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            elevation: 16,
+                            style: context.textStyles.body1.textPrimary,
+                            onChanged: (int? value) {
+                              if (value != null) {
+                                selectedSemester.value = value;
+                              }
+                            },
+                            items:
+                                semesterOptions.map<DropdownMenuItem<int>>((
+                                  int value,
+                                ) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(
+                                      'Semester $value',
+                                      style:
+                                          context.textStyles.body1.textPrimary,
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(

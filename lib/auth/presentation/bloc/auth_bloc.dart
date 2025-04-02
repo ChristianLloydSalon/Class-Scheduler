@@ -50,7 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final hasRecord =
           await _firestore
               .collection('user_records')
-              .where('universityId', isEqualTo: userData['universityId'] ?? '')
+              .where('email', isEqualTo: userData['email'] ?? '')
               .where('role', isEqualTo: userData['role'] ?? '')
               .get();
 
@@ -84,10 +84,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final hasRecord =
             await _firestore
                 .collection('user_records')
-                .where(
-                  'universityId',
-                  isEqualTo: userData['universityId'] ?? '',
-                )
+                .where('email', isEqualTo: userData['email'] ?? '')
                 .where('role', isEqualTo: userData['role'] ?? '')
                 .get();
 
@@ -221,7 +218,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final userRecordDoc =
           await _firestore
               .collection('user_records')
-              .where('universityId', isEqualTo: event.id)
+              .where('email', isEqualTo: event.email)
               .where('role', isEqualTo: event.role.name)
               .get();
 
@@ -229,7 +226,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(
           AuthState(
             errorMessage:
-                'No record found for ID ${event.id}. Please contact your administrator.',
+                'No record found for email ${event.email}. Please contact your administrator.',
           ),
         );
 
@@ -259,12 +256,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final currentUser = _auth.currentUser;
 
       if (currentUser != null) {
-        await _firestore.collection('users').doc(currentUser.uid).set({
+        // Create base user data
+        final userData = {
           'universityId': event.id,
           'email': event.email,
           'name': event.name,
           'role': event.role.name,
-        }, SetOptions(merge: true));
+        };
+
+        // Add student-specific fields if present
+        if (event.role == UserRole.student) {
+          if (event.course != null) {
+            userData['course'] = event.course!;
+          }
+          if (event.yearLevel != null) {
+            userData['yearLevel'] = event.yearLevel!.toString();
+          }
+          if (event.section != null) {
+            userData['section'] = event.section!;
+          }
+        }
+
+        await _firestore
+            .collection('users')
+            .doc(currentUser.uid)
+            .set(userData, SetOptions(merge: true));
 
         await _updateUserDevices(currentUser.uid);
 

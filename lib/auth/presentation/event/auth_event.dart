@@ -57,6 +57,9 @@ class AuthSignUpEvent extends AuthEvent {
   final String email;
   final String password;
   final UserRole role;
+  final String? course;
+  final int? yearLevel;
+  final String? section;
 
   const AuthSignUpEvent({
     required this.name,
@@ -64,8 +67,20 @@ class AuthSignUpEvent extends AuthEvent {
     required this.email,
     required this.password,
     required this.role,
+    this.course,
+    this.yearLevel,
+    this.section,
   });
 
   @override
-  List<Object?> get props => [name, id, email, password, role];
+  List<Object?> get props => [
+    name,
+    id,
+    email,
+    password,
+    role,
+    course,
+    yearLevel,
+    section,
+  ];
 }

@@ -31,8 +31,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
     return docs.where((doc) {
       final data = doc.data() as Map<String, dynamic>;
-      final universityId = data['universityId'] as String? ?? '';
-      return universityId.contains(_searchQuery);
+      final email = data['email'] as String? ?? '';
+      return email.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -51,13 +51,16 @@ class _StudentListScreenState extends State<StudentListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Students',
+                  'Student List',
                   style: context.textStyles.heading2.textPrimary,
                 ),
                 ElevatedButton.icon(
                   onPressed: _showAddStudentDialog,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Student'),
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text(
+                    'Add Student',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                   ),
@@ -66,50 +69,43 @@ class _StudentListScreenState extends State<StudentListScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Manage student records, enrollment, and class assignments',
+              'Manage student accounts and enrollment information',
               style: context.textStyles.body2.textSecondary,
             ),
             const SizedBox(height: 24),
 
-            // Search and filter
-            Row(
-              children: [
-                // Search bar with updated functionality
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search by university ID',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon:
-                          _searchQuery.isNotEmpty
-                              ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() {
-                                    _searchQuery = '';
-                                  });
-                                },
-                              )
-                              : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
+            // Search bar with updated functionality
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by email',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon:
+                    _searchQuery.isNotEmpty
+                        ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _searchQuery = '';
+                            });
+                          },
+                        )
+                        : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
-              ],
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
             ),
 
             const SizedBox(height: 16),
@@ -147,7 +143,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.school_outlined,
+                            Icons.people_outline,
                             size: 64,
                             color: primaryColor.withOpacity(0.3),
                           ),
@@ -176,8 +172,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     itemBuilder: (context, index) {
                       final data =
                           studentDocs[index].data() as Map<String, dynamic>;
-                      final studentId =
-                          data['universityId'] as String? ?? 'Unknown ID';
+                      final email = data['email'] as String? ?? 'No email';
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -189,7 +184,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                             backgroundColor: primaryColor.withOpacity(0.1),
                             child: Icon(Icons.person, color: primaryColor),
                           ),
-                          title: Text('University ID: $studentId'),
+                          title: Text(email),
                         ),
                       );
                     },
@@ -205,7 +200,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   // Show dialog to add a new student
   void _showAddStudentDialog() {
-    final universityIdController = TextEditingController();
+    final emailController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     final primaryColor = Theme.of(context).colorScheme.primary;
 
@@ -220,28 +215,24 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Enter the 6-digit university ID number for the student.',
+                    'Enter the email address for the student.',
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: universityIdController,
+                    controller: emailController,
                     decoration: const InputDecoration(
-                      labelText: 'University ID',
-                      hintText: 'Enter 6-digit ID',
-                      prefixIcon: Icon(Icons.badge_outlined),
+                      labelText: 'Email Address',
+                      hintText: 'student@bisu.edu.ph',
+                      prefixIcon: Icon(Icons.email_outlined),
                     ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(6),
-                    ],
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a university ID';
+                        return 'Please enter an email address';
                       }
-                      if (value.length != 6) {
-                        return 'ID must be exactly 6 digits';
+                      if (!value.toLowerCase().endsWith('@bisu.edu.ph')) {
+                        return 'Email must be a valid @bisu.edu.ph address';
                       }
                       return null;
                     },
@@ -259,8 +250,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   : TextButton(
                     onPressed: () async {
                       if (formKey.currentState?.validate() ?? false) {
-                        final universityId = universityIdController.text;
-                        await _addStudent(universityId);
+                        final email = emailController.text.trim();
+                        await _addStudent(email);
                         if (mounted) Navigator.pop(context);
                       }
                     },
@@ -276,7 +267,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 
   // Add student to Firestore
-  Future<void> _addStudent(String universityId) async {
+  Future<void> _addStudent(String email) async {
     if (_isLoading) return;
 
     setState(() {
@@ -284,18 +275,18 @@ class _StudentListScreenState extends State<StudentListScreen> {
     });
 
     try {
-      // Check if a user with this ID already exists in the user_records collection
+      // Check if a user with this email already exists in the user_records collection
       final existingUser =
           await _firestore
               .collection('user_records')
-              .where('universityId', isEqualTo: universityId)
+              .where('email', isEqualTo: email)
               .get();
 
       if (existingUser.docs.isNotEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('User with this ID already exists'),
+              content: Text('User with this email already exists'),
               backgroundColor: Colors.red,
             ),
           );
@@ -303,11 +294,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
         return;
       }
 
-      // Add to Firestore with only universityId and role
-      await _firestore.collection('user_records').add({
-        'universityId': universityId,
-        'role': 'student',
-      });
+      // Add to Firestore with email and role
+      final data = {'email': email, 'role': 'student'};
+
+      await _firestore.collection('user_records').add(data);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

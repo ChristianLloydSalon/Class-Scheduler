@@ -31,8 +31,8 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
 
     return docs.where((doc) {
       final data = doc.data() as Map<String, dynamic>;
-      final universityId = data['universityId'] as String? ?? '';
-      return universityId.contains(_searchQuery);
+      final email = data['email'] as String? ?? '';
+      return email.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -78,7 +78,7 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search by university ID',
+                hintText: 'Search by email',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon:
                     _searchQuery.isNotEmpty
@@ -172,8 +172,7 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
                     itemBuilder: (context, index) {
                       final data =
                           facultyDocs[index].data() as Map<String, dynamic>;
-                      final facultyId =
-                          data['universityId'] as String? ?? 'Unknown ID';
+                      final email = data['email'] as String? ?? 'No email';
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -185,7 +184,7 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
                             backgroundColor: primaryColor.withOpacity(0.1),
                             child: Icon(Icons.person, color: primaryColor),
                           ),
-                          title: Text('University ID: $facultyId'),
+                          title: Text(email),
                         ),
                       );
                     },
@@ -201,7 +200,7 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
 
   // Show dialog to add a new faculty member
   void _showAddFacultyDialog() {
-    final universityIdController = TextEditingController();
+    final emailController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     final primaryColor = Theme.of(context).colorScheme.primary;
 
@@ -216,28 +215,24 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Enter the 6-digit university ID number for the faculty member.',
+                    'Enter the email address for the faculty member.',
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: universityIdController,
+                    controller: emailController,
                     decoration: const InputDecoration(
-                      labelText: 'University ID',
-                      hintText: 'Enter 6-digit ID',
-                      prefixIcon: Icon(Icons.badge_outlined),
+                      labelText: 'Email Address',
+                      hintText: 'faculty@bisu.edu.ph',
+                      prefixIcon: Icon(Icons.email_outlined),
                     ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(6),
-                    ],
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a university ID';
+                        return 'Please enter an email address';
                       }
-                      if (value.length != 6) {
-                        return 'ID must be exactly 6 digits';
+                      if (!value.toLowerCase().endsWith('@bisu.edu.ph')) {
+                        return 'Email must be a valid @bisu.edu.ph address';
                       }
                       return null;
                     },
@@ -255,8 +250,8 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
                   : TextButton(
                     onPressed: () async {
                       if (formKey.currentState?.validate() ?? false) {
-                        final universityId = universityIdController.text;
-                        await _addFacultyMember(universityId);
+                        final email = emailController.text.trim();
+                        await _addFacultyMember(email);
                         if (mounted) Navigator.pop(context);
                       }
                     },
@@ -272,7 +267,7 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
   }
 
   // Add faculty member to Firestore
-  Future<void> _addFacultyMember(String universityId) async {
+  Future<void> _addFacultyMember(String email) async {
     if (_isLoading) return;
 
     setState(() {
@@ -280,18 +275,18 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
     });
 
     try {
-      // Check if a user with this ID already exists in the user_records collection
+      // Check if a user with this email already exists in the user_records collection
       final existingUser =
           await _firestore
               .collection('user_records')
-              .where('universityId', isEqualTo: universityId)
+              .where('email', isEqualTo: email)
               .get();
 
       if (existingUser.docs.isNotEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('User with this ID already exists'),
+              content: Text('User with this email already exists'),
               backgroundColor: Colors.red,
             ),
           );
@@ -299,11 +294,10 @@ class _FacultyListScreenState extends State<FacultyListScreen> {
         return;
       }
 
-      // Add to Firestore with only universityId and role
-      await _firestore.collection('user_records').add({
-        'universityId': universityId,
-        'role': 'faculty',
-      });
+      // Add to Firestore with email and role
+      final data = {'email': email, 'role': 'faculty'};
+
+      await _firestore.collection('user_records').add(data);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

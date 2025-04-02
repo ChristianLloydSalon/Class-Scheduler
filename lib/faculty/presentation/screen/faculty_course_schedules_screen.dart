@@ -121,7 +121,24 @@ class ScheduleTab extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final selectedDayIndex = useState<int>(0);
-    final weekdays = const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final weekdays = const [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    final shortDayNames = const [
+      'Mon',
+      'Tue',
+      'Wed',
+      'Thu',
+      'Fri',
+      'Sat',
+      'Sun',
+    ];
     final scheduleItems = useState<List<DocumentSnapshot>>([]);
     final isLoading = useState<bool>(true);
     final hasError = useState<bool>(false);
@@ -141,7 +158,7 @@ class ScheduleTab extends HookWidget {
         hasError.value = false;
 
         try {
-          final day = weekdays[selectedDayIndex.value];
+          final day = shortDayNames[selectedDayIndex.value];
           scheduleItems.value = await fetchScheduleItems(
             userId: userId,
             semesterId: semesterId,
@@ -183,7 +200,7 @@ class ScheduleTab extends HookWidget {
           ),
         ),
         ScheduleDaySelector(
-          days: weekdays,
+          days: shortDayNames,
           selectedIndex: selectedDayIndex.value,
           onDaySelected: (index) {
             selectedDayIndex.value = index;

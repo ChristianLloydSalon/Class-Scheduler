@@ -26,6 +26,8 @@ class ScheduleScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final tabController = useTabController(initialLength: 2);
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final selectedDay = useState(days[0]);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -52,6 +54,10 @@ class ScheduleScreen extends HookWidget {
             semesterId: semesterId,
             departmentId: departmentId,
             courseId: courseId,
+            selectedDay: selectedDay.value,
+            onDayChanged: (day) {
+              selectedDay.value = day;
+            },
           ),
           ClassStudentsScreen(
             semesterId: semesterId,
@@ -71,7 +77,7 @@ class ScheduleScreen extends HookWidget {
                       semesterId: semesterId,
                       departmentId: departmentId,
                       courseId: courseId,
-                      day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][0],
+                      day: selectedDay.value,
                     ),
               ),
             );
@@ -178,17 +184,20 @@ class _ScheduleTab extends HookWidget {
   final String semesterId;
   final String departmentId;
   final String courseId;
+  final String selectedDay;
+  final Function(String) onDayChanged;
 
   const _ScheduleTab({
     required this.semesterId,
     required this.departmentId,
     required this.courseId,
+    required this.selectedDay,
+    required this.onDayChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final currentDay = useState(days[0]);
 
     Query<Map<String, dynamic>> getQuery(String day) {
       return FirebaseFirestore.instance
@@ -230,9 +239,9 @@ class _ScheduleTab extends HookWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final day = days[index];
-              final isSelected = day == currentDay.value;
+              final isSelected = day == selectedDay;
               return InkWell(
-                onTap: () => currentDay.value = day,
+                onTap: () => onDayChanged(day),
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -259,7 +268,7 @@ class _ScheduleTab extends HookWidget {
         const SizedBox(height: 16),
         Expanded(
           child: FirestoreListView<Map<String, dynamic>>(
-            query: getQuery(currentDay.value),
+            query: getQuery(selectedDay),
             loadingBuilder:
                 (context) => const Center(child: CircularProgressIndicator()),
             errorBuilder:
@@ -303,7 +312,7 @@ class _ScheduleTab extends HookWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No Classes on ${currentDay.value}',
+                          'No Classes on $selectedDay',
                           style: context.textStyles.body1.textPrimary,
                         ),
                         const SizedBox(height: 8),

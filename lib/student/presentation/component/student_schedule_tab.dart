@@ -15,14 +15,23 @@ class StudentScheduleTab extends StatefulWidget {
 }
 
 class _StudentScheduleTabState extends State<StudentScheduleTab> {
-  final weekdays = const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  final weekdays = const [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  final shortWeekdays = const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   int selectedDayIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    // Always select Monday (index 0) by default
-    selectedDayIndex = 0;
+    final now = DateTime.now();
+    selectedDayIndex = (now.weekday - 1) % 7;
   }
 
   @override
@@ -43,7 +52,7 @@ class _StudentScheduleTabState extends State<StudentScheduleTab> {
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
-                  label: Text(weekdays[index]),
+                  label: Text(shortWeekdays[index]),
                   selected: isSelected,
                   onSelected: (selected) {
                     if (selected) {
@@ -123,7 +132,7 @@ class _StudentScheduleTabState extends State<StudentScheduleTab> {
                     .collection('schedules')
                     .where('courseId', whereIn: courseIds)
                     .where('semesterId', isEqualTo: widget.semesterId)
-                    .where('day', isEqualTo: weekdays[selectedDayIndex])
+                    .where('day', isEqualTo: shortWeekdays[selectedDayIndex])
                     .orderBy('startTime.hour')
                     .orderBy('startTime.minute'),
                 padding: const EdgeInsets.all(16),

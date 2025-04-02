@@ -7,8 +7,17 @@ import 'package:scheduler/admin/presentation/component/search_bar.dart';
 
 class SubjectPicker extends HookWidget {
   final Function(DocumentSnapshot) onSelect;
+  final String semesterId;
+  final String departmentId;
+  final String courseId;
 
-  const SubjectPicker({super.key, required this.onSelect});
+  const SubjectPicker({
+    super.key,
+    required this.onSelect,
+    required this.semesterId,
+    required this.departmentId,
+    required this.courseId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +34,12 @@ class SubjectPicker extends HookWidget {
     }, [searchController]);
 
     Query<Map<String, dynamic>> getQuery(String search) {
+      // Start with the base query filtering by semester, department, and course
       Query<Map<String, dynamic>> query = FirebaseFirestore.instance
           .collection('subjects')
+          .where('semesterId', isEqualTo: semesterId)
+          .where('departmentId', isEqualTo: departmentId)
+          .where('courseId', isEqualTo: courseId)
           .orderBy('title');
 
       if (search.isNotEmpty) {
@@ -75,7 +88,7 @@ class SubjectPicker extends HookWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Select from our comprehensive list of academic subjects to create your schedule.',
+                  'Select from subjects for this semester, department, and course.',
                   style: context.textStyles.body2.textSecondary,
                 ),
               ],
@@ -122,7 +135,7 @@ class SubjectPicker extends HookWidget {
                         const SizedBox(height: 8),
                         Text(
                           searchQuery.value.isEmpty
-                              ? 'No subjects available'
+                              ? 'No subjects available for this semester, department, and course'
                               : 'Try a different search',
                           style: context.textStyles.caption1.textSecondary,
                         ),

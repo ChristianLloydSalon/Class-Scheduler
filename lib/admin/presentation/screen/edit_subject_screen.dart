@@ -38,6 +38,90 @@ class EditSubjectScreen extends HookWidget {
     // Store original code to check if it changed during validation
     final originalCode = useState(subjectData['code']);
 
+    // State for related data
+    final isLoadingSemester = useState<bool>(true);
+    final isLoadingDepartment = useState<bool>(true);
+    final isLoadingCourse = useState<bool>(true);
+
+    final semesterData = useState<Map<String, dynamic>?>(null);
+    final departmentData = useState<Map<String, dynamic>?>(null);
+    final courseData = useState<Map<String, dynamic>?>(null);
+
+    // Fetch semester data
+    useEffect(() {
+      final semesterId = subjectData['semesterId'];
+      if (semesterId == null) {
+        isLoadingSemester.value = false;
+        return null;
+      }
+
+      FirebaseFirestore.instance
+          .collection('semesters')
+          .doc(semesterId)
+          .get()
+          .then((doc) {
+            if (doc.exists) {
+              semesterData.value = doc.data();
+            }
+            isLoadingSemester.value = false;
+          })
+          .catchError((error) {
+            isLoadingSemester.value = false;
+          });
+
+      return null;
+    }, []);
+
+    // Fetch department data
+    useEffect(() {
+      final departmentId = subjectData['departmentId'];
+      if (departmentId == null) {
+        isLoadingDepartment.value = false;
+        return null;
+      }
+
+      FirebaseFirestore.instance
+          .collection('departments')
+          .doc(departmentId)
+          .get()
+          .then((doc) {
+            if (doc.exists) {
+              departmentData.value = doc.data();
+            }
+            isLoadingDepartment.value = false;
+          })
+          .catchError((error) {
+            isLoadingDepartment.value = false;
+          });
+
+      return null;
+    }, []);
+
+    // Fetch course data
+    useEffect(() {
+      final courseId = subjectData['courseId'];
+      if (courseId == null) {
+        isLoadingCourse.value = false;
+        return null;
+      }
+
+      FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .get()
+          .then((doc) {
+            if (doc.exists) {
+              courseData.value = doc.data();
+            }
+            isLoadingCourse.value = false;
+          })
+          .catchError((error) {
+            isLoadingCourse.value = false;
+          });
+
+      return null;
+    }, []);
+
     Future<bool> isCodeExists(String code) async {
       if (code == originalCode.value) {
         // If code hasn't changed, no need to check
@@ -79,6 +163,7 @@ class EditSubjectScreen extends HookWidget {
                 'lec': int.parse(lecUnitsController.text.trim()),
               },
               'title_search': titleController.text.trim().toLowerCase(),
+              // Not updating semesterId, departmentId, courseId or yearLevel
             });
 
         if (!context.mounted) return;
@@ -95,6 +180,120 @@ class EditSubjectScreen extends HookWidget {
           ToastificationType.error,
         );
       }
+    }
+
+    // Helper function to build info containers
+    Widget _buildInfoContainer(String label, String value) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(label, style: context.textStyles.body1.textPrimary),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.lock_outline,
+                size: 14,
+                color: context.colors.textHint,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: context.colors.border),
+              borderRadius: BorderRadius.circular(8),
+              color: context.colors.background.withOpacity(0.6),
+            ),
+            child: Text(value, style: context.textStyles.body1.textPrimary),
+          ),
+        ],
+      );
+    }
+
+    // Helper function to build loading/placeholder containers
+    Widget _buildLoadingContainer(
+      String label,
+      bool isLoading,
+      String placeholder,
+    ) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(label, style: context.textStyles.body1.textPrimary),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.lock_outline,
+                size: 14,
+                color: context.colors.textHint,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (isLoading)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: context.colors.border),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: context.colors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Loading...',
+                    style: context.textStyles.body2.textSecondary,
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: context.colors.border),
+                borderRadius: BorderRadius.circular(8),
+                color: context.colors.background,
+              ),
+              child: Text(
+                placeholder,
+                style: context.textStyles.body2.textSecondary,
+              ),
+            ),
+        ],
+      );
+    }
+
+    String getSemesterText() {
+      if (semesterData.value == null) return 'Not assigned';
+      return 'Year ${semesterData.value?['year']} - Semester ${semesterData.value?['semester']}';
+    }
+
+    String getDepartmentText() {
+      if (departmentData.value == null) return 'Not assigned';
+      return departmentData.value?['name'] ?? 'Unknown';
+    }
+
+    String getCourseText() {
+      if (courseData.value == null) return 'Not assigned';
+      final code = courseData.value?['code'] ?? '';
+      final year = courseData.value?['year'] ?? '';
+      final section = courseData.value?['section'] ?? '';
+      return '$code - Year $year Section $section';
     }
 
     return Scaffold(
@@ -123,6 +322,59 @@ class EditSubjectScreen extends HookWidget {
                         style: context.textStyles.body2.textSecondary,
                       ),
                       const SizedBox(height: 24),
+
+                      // Notice about non-editable fields
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: context.colors.textHint.withOpacity(0.3),
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          color: context.colors.textHint.withOpacity(0.1),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: context.colors.textHint,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'The semester, department, and course assignments cannot be edited. Please create a new subject if you need to change these associations.',
+                                style:
+                                    context.textStyles.caption1.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Display semester information (read-only)
+                      isLoadingSemester.value
+                          ? _buildLoadingContainer('Semester', true, '')
+                          : _buildInfoContainer('Semester', getSemesterText()),
+                      const SizedBox(height: 16),
+
+                      // Display department information (read-only)
+                      isLoadingDepartment.value
+                          ? _buildLoadingContainer('Department', true, '')
+                          : _buildInfoContainer(
+                            'Department',
+                            getDepartmentText(),
+                          ),
+                      const SizedBox(height: 16),
+
+                      // Display course information (read-only)
+                      isLoadingCourse.value
+                          ? _buildLoadingContainer('Course', true, '')
+                          : _buildInfoContainer('Course', getCourseText()),
+                      const SizedBox(height: 16),
+
+                      // Editable fields
                       PrimaryTextField(
                         controller: titleController,
                         labelText: 'Subject Title',

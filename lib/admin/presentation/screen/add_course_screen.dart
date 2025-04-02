@@ -22,8 +22,12 @@ class AddCourseScreen extends HookWidget {
   Widget build(BuildContext context) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final codeController = useTextEditingController();
-    final yearController = useTextEditingController();
-    final sectionController = useTextEditingController();
+    final selectedYear = useState<int>(1);
+    final selectedSection = useState<String>('A');
+
+    // Define year and section options
+    final yearOptions = [1, 2, 3, 4];
+    final sectionOptions = ['A', 'B', 'C', 'D', 'E'];
 
     Future<void> handleSubmit() async {
       if (!(formKey.currentState?.validate() ?? false)) return;
@@ -35,8 +39,8 @@ class AddCourseScreen extends HookWidget {
             .where('semesterId', isEqualTo: semesterId)
             .where('departmentId', isEqualTo: departmentId)
             .where('code', isEqualTo: codeController.text.trim())
-            .where('year', isEqualTo: yearController.text.trim())
-            .where('section', isEqualTo: sectionController.text.trim());
+            .where('year', isEqualTo: selectedYear.value.toString())
+            .where('section', isEqualTo: selectedSection.value);
 
         final courseSnapshot = await courseRef.get();
 
@@ -45,10 +49,23 @@ class AddCourseScreen extends HookWidget {
           return;
         }
 
+        final codeSnapshot =
+            await FirebaseFirestore.instance
+                .collection('course_code')
+                .where('code', isEqualTo: codeController.text.trim())
+                .get();
+
+        if (codeSnapshot.docs.isEmpty) {
+          /// Add course to the course_code collection
+          await FirebaseFirestore.instance.collection('course_code').doc().set({
+            'code': codeController.text.trim(),
+          });
+        }
+
         await FirebaseFirestore.instance.collection('courses').add({
           'code': codeController.text.trim(),
-          'year': yearController.text.trim(),
-          'section': sectionController.text.trim(),
+          'year': selectedYear.value.toString(),
+          'section': selectedSection.value,
           'semesterId': semesterId,
           'departmentId': departmentId,
         });
@@ -116,39 +133,82 @@ class AddCourseScreen extends HookWidget {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 16),
+                      Text('Year', style: context.textStyles.body1.textPrimary),
                       const SizedBox(height: 8),
-                      PrimaryTextField(
-                        controller: yearController,
-                        labelText: 'Year',
-                        hintText: '1, 2, 3, etc',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Year is required';
-                          }
-                          return null;
-                        },
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[1-9]')),
-                        ],
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: context.colors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            isExpanded: true,
+                            value: selectedYear.value,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            elevation: 16,
+                            style: context.textStyles.body1.textPrimary,
+                            onChanged: (int? value) {
+                              if (value != null) {
+                                selectedYear.value = value;
+                              }
+                            },
+                            items:
+                                yearOptions.map<DropdownMenuItem<int>>((
+                                  int value,
+                                ) {
+                                  return DropdownMenuItem<int>(
+                                    value: value,
+                                    child: Text(
+                                      'Year $value',
+                                      style:
+                                          context.textStyles.body1.textPrimary,
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Section',
+                        style: context.textStyles.body1.textPrimary,
                       ),
                       const SizedBox(height: 8),
-                      PrimaryTextField(
-                        controller: sectionController,
-                        labelText: 'Section',
-                        hintText: 'A',
-                        textCapitalization: TextCapitalization.words,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Section is required';
-                          }
-                          if (value.trim().isEmpty) {
-                            return 'Section cannot be only whitespace';
-                          }
-                          return null;
-                        },
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
-                        ],
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: context.colors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedSection.value,
+                            icon: const Icon(Icons.arrow_drop_down),
+                            elevation: 16,
+                            style: context.textStyles.body1.textPrimary,
+                            onChanged: (String? value) {
+                              if (value != null) {
+                                selectedSection.value = value;
+                              }
+                            },
+                            items:
+                                sectionOptions.map<DropdownMenuItem<String>>((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(
+                                      'Section $value',
+                                      style:
+                                          context.textStyles.body1.textPrimary,
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ),
                       ),
                     ],
                   ),

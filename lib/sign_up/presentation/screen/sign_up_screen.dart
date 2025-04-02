@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/common/component/action/primary_button.dart';
 import 'package:scheduler/common/component/communication/custom_toast.dart';
@@ -38,8 +39,73 @@ class SignUpScreen extends HookWidget {
     final passwordController = useTextEditingController();
     final confirmPasswordController = useTextEditingController();
 
+    // Student-specific fields
+    final selectedCourse = useState<String?>(null);
+    final selectedYear = useState<int?>(1);
+    final selectedSection = useState<String?>("A");
+
+    // Fetch course codes from Firestore
+    final courseCodes = useState<List<String>>([]);
+    final isLoadingCourses = useState(true);
+
+    useEffect(() {
+      if (registerType.isStudent) {
+        FirebaseFirestore.instance
+            .collection('course_code')
+            .get()
+            .then((snapshot) {
+              final codes =
+                  snapshot.docs
+                      .map((doc) => doc.data()['code'] as String)
+                      .toList();
+              courseCodes.value = codes;
+              isLoadingCourses.value = false;
+              if (codes.isNotEmpty) {
+                selectedCourse.value = codes[0];
+              }
+            })
+            .catchError((error) {
+              isLoadingCourses.value = false;
+              showToast(
+                'Error',
+                'Failed to load courses: $error',
+                ToastificationType.error,
+              );
+            });
+      }
+      return null;
+    }, []);
+
     void handleSignUp() {
       if (formKey.currentState?.validate() ?? false) {
+        // Validate student-specific fields
+        if (registerType.isStudent) {
+          if (selectedCourse.value == null) {
+            showToast(
+              'Error',
+              'Please select a course',
+              ToastificationType.error,
+            );
+            return;
+          }
+          if (selectedYear.value == null) {
+            showToast(
+              'Error',
+              'Please select a year level',
+              ToastificationType.error,
+            );
+            return;
+          }
+          if (selectedSection.value == null) {
+            showToast(
+              'Error',
+              'Please select a section',
+              ToastificationType.error,
+            );
+            return;
+          }
+        }
+
         context.read<AuthBloc>().add(
           AuthSignUpEvent(
             name: nameController.text,
@@ -47,6 +113,9 @@ class SignUpScreen extends HookWidget {
             email: emailController.text,
             password: passwordController.text,
             role: registerType.isFaculty ? UserRole.faculty : UserRole.student,
+            course: registerType.isStudent ? selectedCourse.value : null,
+            yearLevel: registerType.isStudent ? selectedYear.value : null,
+            section: registerType.isStudent ? selectedSection.value : null,
           ),
         );
       }
@@ -97,6 +166,12 @@ class SignUpScreen extends HookWidget {
                 emailController: emailController,
                 passwordController: passwordController,
                 confirmPasswordController: confirmPasswordController,
+                registerType: registerType,
+                selectedCourse: selectedCourse,
+                selectedYear: selectedYear,
+                selectedSection: selectedSection,
+                courseCodes: courseCodes.value,
+                isLoadingCourses: isLoadingCourses.value,
               ),
               const SizedBox(height: 24),
               PrimaryButton(
@@ -147,6 +222,12 @@ class _FormSection extends StatelessWidget {
     required this.emailController,
     required this.passwordController,
     required this.confirmPasswordController,
+    required this.registerType,
+    required this.selectedCourse,
+    required this.selectedYear,
+    required this.selectedSection,
+    required this.courseCodes,
+    required this.isLoadingCourses,
   });
 
   final Key formKey;
@@ -155,6 +236,12 @@ class _FormSection extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController confirmPasswordController;
+  final RegisterType registerType;
+  final ValueNotifier<String?> selectedCourse;
+  final ValueNotifier<int?> selectedYear;
+  final ValueNotifier<String?> selectedSection;
+  final List<String> courseCodes;
+  final bool isLoadingCourses;
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +330,108 @@ class _FormSection extends StatelessWidget {
               return null;
             },
           ),
+
+          // Student-specific fields
+          if (registerType.isStudent) ...[
+            const SizedBox(height: 16),
+            Text(
+              'Student Information',
+              style: context.textStyles.subtitle1.textPrimary,
+            ),
+            const SizedBox(height: 8),
+
+            // Course dropdown
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child:
+                  isLoadingCourses
+                      ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                      : DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          hint: const Text('Select Course'),
+                          value: selectedCourse.value,
+                          items:
+                              courseCodes.map((code) {
+                                return DropdownMenuItem(
+                                  value: code,
+                                  child: Text(code),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            selectedCourse.value = value;
+                          },
+                        ),
+                      ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Year level dropdown
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  hint: const Text('Select Year Level'),
+                  value: selectedYear.value,
+                  items:
+                      [1, 2, 3, 4].map((year) {
+                        return DropdownMenuItem(
+                          value: year,
+                          child: Text('Year $year'),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    selectedYear.value = value;
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Section dropdown
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  hint: const Text('Select Section'),
+                  value: selectedSection.value,
+                  items:
+                      ['A', 'B', 'C', 'D', 'E'].map((section) {
+                        return DropdownMenuItem(
+                          value: section,
+                          child: Text('Section $section'),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    selectedSection.value = value;
+                  },
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 16),
           PrimaryTextField(
             labelText: 'Password',
             controller: passwordController,

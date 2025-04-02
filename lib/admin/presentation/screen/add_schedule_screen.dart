@@ -162,6 +162,9 @@ class AddScheduleScreen extends HookWidget {
                                   builder:
                                       (context) => SubjectPicker(
                                         onSelect: (doc) => subject.value = doc,
+                                        semesterId: semesterId,
+                                        departmentId: departmentId,
+                                        courseId: courseId,
                                       ),
                                 );
                               },
