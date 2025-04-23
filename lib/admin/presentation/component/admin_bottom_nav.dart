@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:scheduler/common/theme/app_theme.dart';
 
 class AdminBottomNav extends StatelessWidget {
   final int currentIndex;

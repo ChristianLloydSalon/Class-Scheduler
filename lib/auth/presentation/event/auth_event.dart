@@ -4,11 +4,13 @@ enum UserRole {
   student,
   faculty,
   admin,
+  registrar,
   none;
 
   bool get isStudent => this == student;
   bool get isFaculty => this == faculty;
   bool get isAdmin => this == admin;
+  bool get isRegistrar => this == registrar;
   bool get isNone => this == none;
 }
 

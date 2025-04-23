@@ -48,55 +48,60 @@ class AdminScreen extends HookWidget {
       selectedIndex.value = index;
     }, []);
 
-    return BlocListener<AuthBloc, AuthState>(
+    return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (!state.authenticated) {
           context.pushReplacementNamed(LoginScreen.routeName);
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
+      builder: (context, state) {
+        return Scaffold(
           backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          title: Text(
-            'Admin Panel',
-            style: context.textStyles.heading2.textPrimary,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: false,
+            title: Text(
+              '${state.role.name.toUpperCase()} Panel',
+              style: context.textStyles.heading2.textPrimary,
+            ),
+            iconTheme: const IconThemeData(color: Colors.black87),
           ),
-          iconTheme: const IconThemeData(color: Colors.black87),
-        ),
-        drawer: AdminDrawer(
-          onProfileTap: handleProfileTap,
-          onLogoutTap: handleLogoutTap,
-          onWebsiteTap: () async {
-            const websiteUrl = 'https://ismis.bisu.edu.ph/';
+          drawer: AdminDrawer(
+            onProfileTap: handleProfileTap,
+            onLogoutTap: handleLogoutTap,
+            onWebsiteTap: () async {
+              const websiteUrl = 'https://ismis.bisu.edu.ph/';
 
-            if (await canLaunchUrl(Uri.parse(websiteUrl))) {
-              await launchUrl(Uri.parse(websiteUrl));
-            }
-          },
-        ),
-        body: SafeArea(
-          child: AdminScreensProvider(selectedIndex: selectedIndex.value),
-        ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -5),
-              ),
-            ],
+              if (await canLaunchUrl(Uri.parse(websiteUrl))) {
+                await launchUrl(Uri.parse(websiteUrl));
+              }
+            },
           ),
-          child: AdminBottomNav(
-            currentIndex: selectedIndex.value,
-            onTap: handleBottomNavTap,
+          body: SafeArea(
+            child: AdminScreensProvider(selectedIndex: selectedIndex.value),
           ),
-        ),
-      ),
+          bottomNavigationBar:
+              state.role.isAdmin
+                  ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: AdminBottomNav(
+                      currentIndex: selectedIndex.value,
+                      onTap: handleBottomNavTap,
+                    ),
+                  )
+                  : const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

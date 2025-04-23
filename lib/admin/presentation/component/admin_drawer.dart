@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 import 'package:scheduler/common/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -76,9 +78,13 @@ class AdminDrawer extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    'Admin Portal',
-                    style: context.textStyles.heading2.textPrimary,
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      return Text(
+                        '${state.role.name.toUpperCase()} Portal',
+                        style: context.textStyles.heading2.textPrimary,
+                      );
+                    }
                   ),
                   const SizedBox(height: 4),
                   Text(

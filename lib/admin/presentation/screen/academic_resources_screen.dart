@@ -12,7 +12,6 @@ class AcademicResourcesScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final accentColor = context.colors.accent;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -56,7 +55,9 @@ class AcademicResourcesScreen extends HookWidget {
               // Navigate to rooms screen
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const RoomListScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const RoomListScreen(),
+                ),
               );
             },
           ),

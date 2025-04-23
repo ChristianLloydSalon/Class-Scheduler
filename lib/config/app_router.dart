@@ -104,6 +104,7 @@ class AppRouter {
       case UserRole.faculty:
         return FacultyScreen.route;
       case UserRole.admin:
+      case UserRole.registrar:
         return AdminScreen.route;
       case UserRole.none:
         return LoginScreen.route;
@@ -117,6 +118,7 @@ class AppRouter {
       case UserRole.faculty:
         return path.startsWith('/faculty/');
       case UserRole.admin:
+      case UserRole.registrar:
         return path.startsWith('/admin/');
       case UserRole.none:
         return false;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scheduler/admin/presentation/screen/semester_screen.dart';
 import 'package:scheduler/admin/presentation/screen/academic_resources_screen.dart';
+import 'package:scheduler/auth/presentation/bloc/auth_bloc.dart';
 
 class AdminScreensProvider extends StatelessWidget {
   final int selectedIndex;
@@ -14,6 +16,18 @@ class AdminScreensProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IndexedStack(index: selectedIndex, children: _screens);
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state.role.isAdmin) {
+          return IndexedStack(index: selectedIndex, children: _screens);
+        }
+
+        if (state.role.isRegistrar) {
+          return AcademicResourcesScreen();
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
   }
 }

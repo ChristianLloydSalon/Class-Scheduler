@@ -55,7 +55,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               .get();
 
       final role =
-          hasRecord.docs.isNotEmpty || userData['role'] == UserRole.admin.name
+          hasRecord.docs.isNotEmpty || userData['role'] == UserRole.admin.name || userData['role'] == UserRole.registrar.name
               ? UserRole.values.firstWhere(
                 (e) => e.name == userDoc.data()?['role'],
                 orElse: () => UserRole.none,
@@ -88,17 +88,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 .where('role', isEqualTo: userData['role'] ?? '')
                 .get();
 
-        print('hasRecord: ${hasRecord.docs.isNotEmpty}');
-
         final role =
-            hasRecord.docs.isNotEmpty || userData['role'] == UserRole.admin.name
+            hasRecord.docs.isNotEmpty || userData['role'] == UserRole.admin.name || userData['role'] == UserRole.registrar.name
                 ? UserRole.values.firstWhere(
                   (e) => e.name == userDoc.data()?['role'],
                   orElse: () => UserRole.none,
                 )
                 : UserRole.none;
-
-        print('role: ${role.name}');
 
         await _updateUserDevices(user.uid);
 
