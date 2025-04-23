@@ -55,8 +55,3 @@ workflows:
           cd functions
           firebase deploy --only functions --token "$FIREBASE_TOKEN"
           echo "Functions deployed"
-
-    publishing:
-      email:
-        recipients:
-          - christianlloyd.b.salon@gmail.com
